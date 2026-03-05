@@ -8,6 +8,7 @@ class AppRouter{
     switch(setting.name){
       case Routes.homePage:
         // return MaterialPageRoute(builder: (_)=>);
+      case Routes.ksignin:
 
 
     }
