@@ -1,25 +1,24 @@
 import 'package:depi_project/features/Auth/data/repo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/routing/routes.dart';
+// import '../../services/firestore_service.dart';
 
-// import 'google_sign_in.dart';
-
-
-class SignInMobileLayout extends StatefulWidget {
-  const SignInMobileLayout({super.key});
+class SignUpMobileLayout extends StatefulWidget {
+  const SignUpMobileLayout({super.key});
 
   @override
-  State<SignInMobileLayout> createState() => _SignInPageState();
+  State<SignUpMobileLayout> createState() => _SignUpPageState();
 }
 
-class _SignInPageState extends State<SignInMobileLayout> {
+class _SignUpPageState extends State<SignUpMobileLayout> {
   final formkey = GlobalKey<FormState>();
-  TextEditingController email = TextEditingController();
+  TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
+  TextEditingController email = TextEditingController();
   bool isNotVisible = true;
+  late AuthReo usersFireStore = AuthReo();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,32 +31,53 @@ class _SignInPageState extends State<SignInMobileLayout> {
             child: Column(
               spacing: 30,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Text(
-                    'Hello Again!',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                  ),
+                Text(
+                  'Create Account',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'welcome Back You\'ve Been Missed',
+                  "Let's Create Account Together",
                   style: TextStyle(
-                    fontSize: 20,
-
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
                   ),
                 ),
-
+                TextFormField(
+                  controller: username,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "please, Enter your Full name";
+                    }
+                    return null;
+                  },
+                  style: TextStyle(fontSize: 20),
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    labelText: 'Full name',
+                    labelStyle: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xff4A249D),
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
+                ),
                 TextFormField(
                   controller: email,
-                  validator: ( value){
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please, enter your email";
                     }
 
-                    String pattern =
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
+                    String pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
                     RegExp regex = RegExp(pattern);
 
                     if (!regex.hasMatch(value)) {
@@ -69,18 +89,23 @@ class _SignInPageState extends State<SignInMobileLayout> {
                   style: TextStyle(fontSize: 18),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                      labelText: 'Email',
+                    labelText: 'Email',
 
-                      labelStyle: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0),),
-                      enabledBorder:  OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xff4A249D),width: 2.0),
-                      )),
-
+                    labelStyle: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Color(0xff4A249D),
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
                 ),
-                // SizedBox(height: 10,),
-
 
                 TextFormField(
                   controller: password,
@@ -123,48 +148,72 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: (){
-                    Navigator.pushNamed(context, Routes.forgetPass);
-                  },
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      'Recovery password',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ),
 
                 GestureDetector(
-                  onTap: ()async {
+                  onTap: () async {
                     if (formkey.currentState!.validate()) {
                       await FirebaseAuth.instance
-                          .signInWithEmailAndPassword(
+                          .createUserWithEmailAndPassword(
                         email: email.text.trim(),
                         password: password.text.trim(),
                       )
-                          .then((data) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Login successful"),
-                            content: Text("Welcome ${data.user!.email}"),
-                          ),
+                          .then((data) async {
+                        String uid = data.user!.uid;
+
+                        await usersFireStore.createUserToFireStore(
+                          uid,
+                          username.text,
+                          email.text,
                         );
 
-                        Navigator.pushReplacementNamed(context, Routes.homePage);
+                        showDialog(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                            title: const Text("SignUp successful"),
+                            content: Text(
+                              "Welcome  ${data.user!.email}",
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(
+                                    context,
+                                  );
+                                  Navigator.pushNamed(
+                                    context,
+                                    Routes.homePage,
+                                  );
+                                },
+                                child: const Text("OK"),
+                              ),
+                            ],
+                          ),
+                        );
                       })
                           .catchError((error) {
                         showDialog(
                           context: context,
-                          builder: (context) => const AlertDialog(
-                            title: Text("Login unsuccessful"),
-                            content: Text("Please check your email or password."),
+                          builder:
+                              (context) => AlertDialog(
+                            title: const Text("SignUp unsuccessful"),
+                            content: Text(
+                              error.message ?? error.toString(),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(
+                                    context,
+                                  );
+                                  Navigator.pushNamed(
+                                    context,
+                                    Routes.homePage,
+                                  );
+                                },
+                                child: const Text("OK"),
+                              ),
+                            ],
                           ),
                         );
                       });
@@ -177,9 +226,10 @@ class _SignInPageState extends State<SignInMobileLayout> {
                       color: Colors.blueAccent,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Center(
+
+                    child: Center(
                       child: Text(
-                        'Sign in',
+                        'Sign Up',
                         style: TextStyle(
                           fontSize: 25,
                           fontWeight: FontWeight.bold,
@@ -189,46 +239,30 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     ),
                   ),
                 ),
-
                 Spacer(),
-                Text("Or SignIn" ,style: TextStyle(color: Colors.grey,fontSize: 18),textAlign: TextAlign.center,),
-
-                ElevatedButton.icon(
-                    onPressed: ()async{
-                      await AuthReo.signInWithGoogle(context);
-                    },
-                    label: Text("Sign in with Google",style: TextStyle(color: Colors.black,fontSize: 18)),
-                    icon: Icon(Icons.g_mobiledata_rounded,size: 30,color:Colors.deepPurple,)),
-
-
-
-
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
                       Text(
-                        'Don\'t have an account?',
+                        'Already have an account?',
                         style: TextStyle(fontSize: 20, color: Colors.grey),
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, Routes.signUp);
+                          Navigator.pushNamed(context, Routes.signIn);
                         },
                         child: Text(
-                          'Sign up for free',
+                          'Sign in',
                           style: TextStyle(
                             decoration: TextDecoration.underline,
                             fontSize: 16,
-                            color: Colors.grey,
-
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-
               ],
             ),
           ),
