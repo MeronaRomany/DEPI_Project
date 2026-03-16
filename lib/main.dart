@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'App/my_app.dart';
-import 'core/networking/dio_helper.dart';
 import 'firebase_options.dart';
 
 void main()async {

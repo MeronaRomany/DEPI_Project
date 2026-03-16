@@ -1,6 +1,5 @@
 import 'package:depi_project/features/Auth/data/repo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/routing/routes.dart';

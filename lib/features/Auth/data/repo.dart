@@ -10,7 +10,7 @@ class AuthReo{
   late UserModel userModel;
 
   Future createUserToFireStore(String uid,String name, String email)async{
-    var setuserData= await FirebaseFirestore.instance.collection("users").doc(uid);
+    var setuserData= FirebaseFirestore.instance.collection("users").doc(uid);
 
     Map<String, dynamic> json= {
       "uid": uid,
@@ -43,12 +43,12 @@ class AuthReo{
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) return;
     // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
     // Create a new credential
     final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
     );
 
     // Once signed in, return the UserCredential

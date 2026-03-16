@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DioHelper {
  static late Dio dio;
-  static   init(){
+  static   void init(){
    dio= Dio(BaseOptions(
       baseUrl: ApiConstant.baseUrl,
       receiveDataWhenStatusError: true,
