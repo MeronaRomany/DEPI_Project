@@ -47,29 +47,30 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAGXmCptDPZy63XaJo-ke1KmZc5Yv31xY8',
-    appId: '1:50601780855:web:b52240e425d74a387a4872',
-    messagingSenderId: '50601780855',
-    projectId: 'depi-project-c20c4',
-    authDomain: 'depi-project-c20c4.firebaseapp.com',
-    storageBucket: 'depi-project-c20c4.firebasestorage.app',
-    measurementId: 'G-24MTDH1E7M',
+    apiKey: 'AIzaSyC5OVrk75D6xpvQw3gZ_UDzkMtloG2Hak8',
+    appId: '1:92948808001:web:3f24ac9f7149f7c671a1c0',
+    messagingSenderId: '92948808001',
+    projectId: 'tour-guide-final',
+    authDomain: 'tour-guide-final.firebaseapp.com',
+    storageBucket: 'tour-guide-final.firebasestorage.app',
+    measurementId: 'G-2VLEDVRG3G',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCxgNHN6AKy-HiQu1bEQ7W2FrbQjjbnrXQ',
-    appId: '1:50601780855:android:472a5097a92ec83e7a4872',
-    messagingSenderId: '50601780855',
-    projectId: 'depi-project-c20c4',
-    storageBucket: 'depi-project-c20c4.firebasestorage.app',
+    apiKey: 'AIzaSyCpTjVFgszROqRG35SK0rdf8gJIUpgssJE',
+    appId: '1:92948808001:android:3ba39413b8dd379671a1c0',
+    messagingSenderId: '92948808001',
+    projectId: 'tour-guide-final',
+    storageBucket: 'tour-guide-final.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCWtt3RdEuq_TQQVW_o5QQPXE_NH062YpU',
-    appId: '1:50601780855:ios:01d6401e0aa807737a4872',
-    messagingSenderId: '50601780855',
-    projectId: 'depi-project-c20c4',
-    storageBucket: 'depi-project-c20c4.firebasestorage.app',
+    apiKey: 'AIzaSyB_Ul7HAhQ0eLELanIbpbMJJ4Edw2ONO6I',
+    appId: '1:92948808001:ios:f37f2e6b47b510af71a1c0',
+    messagingSenderId: '92948808001',
+    projectId: 'tour-guide-final',
+    storageBucket: 'tour-guide-final.firebasestorage.app',
+    iosClientId: '92948808001-gkc97pbkf7jrpfbtts7mq70v0unld87h.apps.googleusercontent.com',
     iosBundleId: 'com.example.depiProject',
   );
 }

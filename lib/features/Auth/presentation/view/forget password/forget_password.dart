@@ -1,6 +1,6 @@
 import 'package:depi_project/core/response_layout.dart';
-import 'package:depi_project/features/Auth/presentation/view/layouts/forgetPassword_tablet_layout.dart';
-import 'package:depi_project/features/Auth/presentation/view/layouts/forgetPassword_web_layout.dart';
+import 'package:depi_project/features/Auth/presentation/view/forget%20password/layouts/forgetPassword_tablet_layout.dart';
+import 'package:depi_project/features/Auth/presentation/view/forget%20password/layouts/forgetPassword_web_layout.dart';
 import 'package:flutter/material.dart';
 
 import 'layouts/forgetPassword_mobile_layout.dart';

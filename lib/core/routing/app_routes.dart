@@ -1,9 +1,10 @@
 import 'package:depi_project/core/routing/routes.dart';
 import 'package:flutter/material.dart';
 
-import '../../features/Auth/presentation/view/forget_password.dart';
-import '../../features/Auth/presentation/view/sign_in.dart';
-import '../../features/Auth/presentation/view/sign_up.dart';
+import '../../features/Auth/presentation/view/forget password/forget_password.dart';
+import '../../features/Auth/presentation/view/email verifiy/VerifyEmailPage_mobile_layout.dart';
+import '../../features/Auth/presentation/view/Sign in/sign_in.dart';
+import '../../features/Auth/presentation/view/sign up/sign_up.dart';
 import '../../features/home/presentation/view/home_screen.dart';
 
 class AppRouter{
@@ -19,6 +20,8 @@ class AppRouter{
         return MaterialPageRoute(builder: (_)=>ForgetPassword());
       case Routes.homePage:
         return MaterialPageRoute(builder: (_)=>HomeScreen());
+      case "verfiy email":
+        return MaterialPageRoute(builder: (_)=>VerifyEmailPage());
     }
     return MaterialPageRoute(builder: (_)=>Center(child: Text("Not found page")));
   }

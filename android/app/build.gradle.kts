@@ -34,7 +34,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.depi_project"
+        applicationId = "com.tourguide.app.v1"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
