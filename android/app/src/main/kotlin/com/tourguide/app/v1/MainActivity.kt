@@ -1,4 +1,4 @@
-package com.example.depi_project
+package com.tourguide.app.v1
 
 import io.flutter.embedding.android.FlutterActivity
 
