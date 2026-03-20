@@ -47,6 +47,7 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
+
     apiKey: 'AIzaSyC5OVrk75D6xpvQw3gZ_UDzkMtloG2Hak8',
     appId: '1:92948808001:web:3f24ac9f7149f7c671a1c0',
     messagingSenderId: '92948808001',
@@ -71,6 +72,11 @@ class DefaultFirebaseOptions {
     projectId: 'tour-guide-final',
     storageBucket: 'tour-guide-final.firebasestorage.app',
     iosClientId: '92948808001-gkc97pbkf7jrpfbtts7mq70v0unld87h.apps.googleusercontent.com',
+
+   
+
+ 
+
     iosBundleId: 'com.example.depiProject',
   );
 }
