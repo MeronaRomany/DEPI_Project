@@ -52,32 +52,38 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
     return Scaffold(
       appBar: AppBar(title: const Text("Verify Your Email")),
       body: Padding(
-        padding: const EdgeInsets.only(left: 8.0,right: 8.0,top: 20,bottom: 8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              isVerified
-                  ? "✅ Your email is verified!"
-                  : "Please check your email and verify your account.",
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            if (!isVerified)
-              ElevatedButton(
-                onPressed: canResend ? resendVerificationEmail : null,
-                child: const Text("Resend Verification Email"),
+        padding: const EdgeInsets.only(left: 8.0,right: 8.0,top: 50,bottom: 8.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text(
+                isVerified
+                    ? "✅ Your email is verified!"
+                    : "Please check your email and verify your account.",
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18),
               ),
-            const SizedBox(height: 10),
-            if (isVerified)
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, Routes.homePage);
-                },
-                child: const Text("Continue to Home"),
-              ),
-          ],
+              const SizedBox(height: 20),
+              if (!isVerified)
+                ElevatedButton(
+                  onPressed: canResend ? resendVerificationEmail : null,
+                  child: const Text("Resend Verification Email"),
+                ),
+              const SizedBox(height: 10),
+              if (isVerified)
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      Routes.homePage,
+                          (route) => false,
+                    );
+                  },
+                  child: const Text("Continue to Home"),
+                ),
+            ],
+          ),
         ),
       ),
     );

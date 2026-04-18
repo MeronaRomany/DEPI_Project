@@ -53,7 +53,10 @@ class AuthReo{
 
     // Once signed in, return the UserCredential
     await FirebaseAuth.instance.signInWithCredential(credential);
-    Navigator.pushNamed(context, Routes.homePage);
-  }
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      Routes.homePage,
+          (route) => false,
+    );  }
 
 }

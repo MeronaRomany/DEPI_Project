@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:device_preview/device_preview.dart';
 import 'App/my_app.dart';
 import 'firebase_options.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 void main()async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,12 @@ void main()async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
     }
+
+    await FirebaseAppCheck.instance.activate(
+      providerAndroid: AndroidDebugProvider(),
+    );
+
+    final token = await FirebaseAppCheck.instance.getToken(true);
   } catch (e) {
     print("Error during initialization: $e");
   }
