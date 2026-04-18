@@ -224,6 +224,7 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                  // SizedBox(height: height * 0.015),
 
                 GestureDetector(
+
                   onTap: ()async{
                     await AuthReo.signInWithGoogle(context);
 

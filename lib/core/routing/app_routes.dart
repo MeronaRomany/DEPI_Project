@@ -23,6 +23,6 @@ class AppRouter{
       case "verfiy email":
         return MaterialPageRoute(builder: (_)=>VerifyEmailPage());
     }
-    return MaterialPageRoute(builder: (_)=>Center(child: Text("Not found page")));
+    return MaterialPageRoute(builder: (_)=>Center(child: Text("Not found page",style: TextStyle(color: Colors.white),)));
   }
 }

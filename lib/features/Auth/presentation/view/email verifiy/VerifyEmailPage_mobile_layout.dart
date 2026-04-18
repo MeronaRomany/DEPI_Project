@@ -74,7 +74,11 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
               if (isVerified)
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, Routes.homePage);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      Routes.homePage,
+                          (route) => false,
+                    );
                   },
                   child: const Text("Continue to Home"),
                 ),
