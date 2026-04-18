@@ -189,11 +189,12 @@ class _SignInPageState extends State<SignInMobileLayout> {
                               ),
                             );
 
-                            Navigator.pushReplacementNamed(
+                            Navigator.pushNamedAndRemoveUntil(
                               context,
                               Routes.homePage,
+                                  (route) => false,
                             );
-                          })
+                      })
                           .catchError((error) {
                             showDialog(
                               context: context,
