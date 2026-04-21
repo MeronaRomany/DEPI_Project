@@ -18,6 +18,7 @@ class AppString {
   static const String kSign_up_now='Sign up now!';
   static const String kEmailVerifiy='Please Enter Your Email Address To Receive a Verification Code';
   static const String kContinue='Continue';
+  static const String khomeSearch='search to find places,restaurant,monument';
 
 
 

@@ -15,6 +15,9 @@ class $AssetsImagesGen {
     'assets/images/Screenshot 2026-03-15 025740.png',
   );
   final AssetGenImage search = const AssetGenImage('assets/images/search.png');
+  final AssetGenImage topViewTravelKitWoodenTable = const AssetGenImage(
+    'assets/images/top-view-travel-kit-wooden-table.jpg',
+  );
 }
 
 class AssetGenImage {
@@ -81,46 +84,6 @@ class AssetGenImage {
   ImageProvider provider({AssetBundle? bundle, String? package}) {
     return AssetImage(_assetName, bundle: bundle, package: package);
   }
-
-  Widget custom({
-    Key? key,
-    required Widget Function(BuildContext context, String assetPath) builder,
-  }) {
-    return Builder(
-      key: key,
-      builder: (context) => builder(context, _assetName),
-    );
-  }
-
-  String get path => _assetName;
-
-  String get keyName => _assetName;
-}
-
-class SvgGenImage {
-  const SvgGenImage(this._assetName);
-
-  final String _assetName;
-
-  Widget custom({
-    Key? key,
-    required Widget Function(BuildContext context, String assetPath) builder,
-  }) {
-    return Builder(
-      key: key,
-      builder: (context) => builder(context, _assetName),
-    );
-  }
-
-  String get path => _assetName;
-
-  String get keyName => _assetName;
-}
-
-class LottieGenImage {
-  const LottieGenImage(this._assetName);
-
-  final String _assetName;
 
   Widget custom({
     Key? key,
