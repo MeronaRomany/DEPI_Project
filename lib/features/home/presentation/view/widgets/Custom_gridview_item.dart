@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constant/app_color.dart';
@@ -15,12 +16,28 @@ class CustomGridviewItem extends StatelessWidget {
           height: 250,
           width: 200,
           decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(image),
-                fit: BoxFit.cover,
-              ),
-              borderRadius: BorderRadius.circular(12)
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: image,
+              fit: BoxFit.cover,
+              memCacheHeight: 400,
+              memCacheWidth: 300,
 
+              placeholder: (context, url) => Container(
+                color: Colors.grey.shade300,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey.shade300,
+                child: const Icon(Icons.error),
+              ),
+            ),
           ),
         ),
 
@@ -28,12 +45,12 @@ class CustomGridviewItem extends StatelessWidget {
 
             alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8.0,bottom: 8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Text(title,style: TextStyle(color: Appcolor.kWhite,fontWeight: FontWeight.bold),),
             )),
         Align(alignment: Alignment.topRight,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8.0,bottom: 8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Icon(Icons.favorite_border),
             )),
 

@@ -106,22 +106,37 @@ class HomeMobileLayout extends StatelessWidget {
             ),
 
             Expanded(
-              child: GridView.builder(
-                // shrinkWrap: true,
-                // physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 3 / 4,
-                ),
-                itemCount: StateCityRepo.data['states'].length,
-                itemBuilder: (context, item) => CustomGridviewItem(
-                  image: StateCityRepo.data['states'][item]['image'],
-                  title: StateCityRepo.data['states'][item]['name'],
-                ),
+              child: PageView.builder(
+                itemCount: categoryItems.length,
+                itemBuilder: (context, index) {
+                  List items;
+                  if (index == 0) {
+                    items = StateCityRepo.data['states'];
+                  } else if (index == 1) {
+                    items = StateCityRepo.data['cities'];
+                  } else {
+                    items = [];
+                  }
+
+                  return GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 3 / 4,
+                    ),
+                    itemCount: items.length,
+                    itemBuilder: (context, item) {
+                      return CustomGridviewItem(
+                        image: items[item]['image'],
+                        title: items[item]['name'],
+                      );
+                    },
+                  );
+                },
               ),
-            ),
+            )
           ],
         ),
       ),

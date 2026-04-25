@@ -30,6 +30,7 @@ class CustomCategoryItem extends StatelessWidget {
 List<CustomCategoryItem> categoryItems=[
   CustomCategoryItem(text: "ALL"),
   CustomCategoryItem(text: "States"),
+  CustomCategoryItem(text: "Cities"),
   CustomCategoryItem(text: "Monument"),
   CustomCategoryItem(text: "restaurant"),
 
