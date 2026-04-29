@@ -1,0 +1,1 @@
+Tourism applications increasingly rely on location-based services and real-time data to enhance user experience. Offline-first architecture improves usability in low connectivity areas.

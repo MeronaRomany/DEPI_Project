@@ -1,0 +1,4 @@
+Tables:
+Place
+FavoritePlaces
+VisitList

@@ -1,0 +1,2 @@
+The Tour Guide App is a mobile application built using Flutter that helps users explore tourist attractions, hotels, restaurants, and historical places in any city using external APIs (Tripadvisor API).
+The app provides real-time location-based services and works with an offline-first approach using Floor local database.
