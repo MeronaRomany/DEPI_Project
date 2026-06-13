@@ -6,6 +6,7 @@ import '../../features/Auth/presentation/view/email verifiy/VerifyEmailPage_mobi
 import '../../features/Auth/presentation/view/Sign in/sign_in.dart';
 import '../../features/Auth/presentation/view/sign up/sign_up.dart';
 import '../../features/home/presentation/view/home_screen.dart';
+import '../../features/notification/presentation/view/notification_screen.dart';
 
 class AppRouter{
 
@@ -22,6 +23,8 @@ class AppRouter{
         return MaterialPageRoute(builder: (_)=>HomeScreen());
       case "verfiy email":
         return MaterialPageRoute(builder: (_)=>VerifyEmailPage());
+      case Routes.notif:
+        return MaterialPageRoute(builder: (_)=>NotificationScreen());
     }
     return MaterialPageRoute(builder: (_)=>Center(child: Text("Not found page",style: TextStyle(color: Colors.white),)));
   }
