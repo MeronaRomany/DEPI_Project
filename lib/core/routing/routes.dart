@@ -5,5 +5,5 @@ class Routes {
   static const String forgetPass="/forgetPassword";
   static const String notif="/Notifications";
 
-
+  static const String details = "/details";
 }

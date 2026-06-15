@@ -9,7 +9,6 @@ import '../features/notification/data/service/notifcation_service.dart';
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,11 +19,7 @@ class MyApp extends StatelessWidget {
 
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
-
-     initialRoute:FirebaseAuth.instance.currentUser != null &&
-         FirebaseAuth.instance.currentUser!.emailVerified
-        ? Routes.homePage
-         : Routes.signIn,
+      initialRoute: Routes.signIn,
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

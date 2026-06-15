@@ -19,6 +19,8 @@ class _SignInPageState extends State<SignInMobileLayout> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   bool isNotVisible = true;
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -28,7 +30,7 @@ class _SignInPageState extends State<SignInMobileLayout> {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.only(left: 20.0,right: 20.0),
+          padding: EdgeInsets.only(left: 20.0, right: 20.0),
           child: Form(
             key: formkey,
             child: Column(
@@ -40,7 +42,7 @@ class _SignInPageState extends State<SignInMobileLayout> {
                   child: Text(
                     AppString.kWelcome,
                     style: TextStyle(
-                      fontSize: width*0.06,
+                      fontSize: width * 0.06,
                       fontWeight: FontWeight.bold,
                       color: Appcolor.kblack,
                     ),
@@ -49,34 +51,29 @@ class _SignInPageState extends State<SignInMobileLayout> {
                 Text(
                   AppString.kSignin_to_continue,
                   style: TextStyle(
-                    fontSize: width*0.06,
+                    fontSize: width * 0.06,
                     fontWeight: FontWeight.bold,
                     color: Appcolor.kgrey,
                   ),
                 ),
                 SizedBox(height: height * 0.02),
-
                 TextFormField(
                   controller: email,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please, enter your email";
                     }
-
                     String pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
                     RegExp regex = RegExp(pattern);
-
                     if (!regex.hasMatch(value)) {
                       return "Please, enter a valid email";
                     }
-
                     return null;
                   },
                   style: TextStyle(fontSize: 18, color: Appcolor.kgrey),
-                  textInputAction: TextInputAction.search,
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: AppString.kEmail,
-
                     labelStyle: TextStyle(
                       fontSize: 18,
                       color: Appcolor.kgrey,
@@ -94,7 +91,6 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     ),
                   ),
                 ),
-
                 TextFormField(
                   controller: password,
                   validator: (value) {
@@ -107,9 +103,8 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     return null;
                   },
                   style: TextStyle(fontSize: 18, color: Appcolor.kgrey),
-                  textInputAction: TextInputAction.search,
+                  textInputAction: TextInputAction.done,
                   obscureText: isNotVisible,
-
                   decoration: InputDecoration(
                     labelText: AppString.kPassword,
                     labelStyle: TextStyle(
@@ -119,8 +114,9 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     ),
                     suffixIcon: IconButton(
                       onPressed: () {
-                        changePasswordVisible(!isNotVisible);
-                        setState(() {});
+                        setState(() {
+                          isNotVisible = !isNotVisible;
+                        });
                       },
                       icon: Icon(
                         isNotVisible ? Icons.visibility : Icons.visibility_off,
@@ -138,7 +134,6 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     ),
                   ),
                 ),
-               // SizedBox(height: height * 0.015),
                 GestureDetector(
                   onTap: () {
                     Navigator.pushNamed(context, Routes.forgetPass);
@@ -155,87 +150,80 @@ class _SignInPageState extends State<SignInMobileLayout> {
                     ),
                   ),
                 ),
-
                 GestureDetector(
-                  onTap: () async {
+                  onTap: isLoading ? null : () async {
                     if (formkey.currentState!.validate()) {
-                      await FirebaseAuth.instance
-                          .signInWithEmailAndPassword(
-                            email: email.text.trim(),
-                            password: password.text.trim(),
-                          )
-                          .then((data) async {
-                            if (!data.user!.emailVerified) {
-                              await FirebaseAuth.instance.signOut();
-
-                              showDialog(
-                                context: context,
-                                builder: (context) => const AlertDialog(
-                                  title: Text("Email not verified"),
-                                  content: Text(
-                                    "يرجى تأكيد البريد الإلكتروني أولاً",
-                                  ),
-                                ),
-                              );
-
-                              return;
-                            }
-
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text("Login successful"),
-                                content: Text("Welcome ${data.user!.email}"),
+                      setState(() => isLoading = true);
+                      try {
+                        await FirebaseAuth.instance
+                            .signInWithEmailAndPassword(
+                          email: email.text.trim(),
+                          password: password.text.trim(),
+                        );
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          Routes.homePage,
+                              (route) => false,
+                        );
+                      } on FirebaseAuthException catch (e) {
+                        setState(() => isLoading = false);
+                        String message = "Please check your email or password.";
+                        if (e.code == 'user-not-found') {
+                          message = "No account found. Please sign up first.";
+                        } else if (e.code == 'wrong-password') {
+                          message = "Wrong password. Please try again.";
+                        }
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text("Login Failed"),
+                            content: Text(message),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  if (e.code == 'user-not-found') {
+                                    Navigator.pushNamed(
+                                        context, Routes.signUp);
+                                  }
+                                },
+                                child: Text("OK"),
                               ),
-                            );
-
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              Routes.homePage,
-                                  (route) => false,
-                            );
-                      })
-                          .catchError((error) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => const AlertDialog(
-                                title: Text("Login unsuccessful"),
-                                content: Text(
-                                  "Please check your email or password.",
-                                ),
-                              ),
-                            );
-                          });
+                            ],
+                          ),
+                        );
+                      }
                     }
                   },
                   child: Container(
-                    height: height*0.07,
+                    height: height * 0.07,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Appcolor.kblack,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child:  Center(
-                      child: Text(
+                    child: Center(
+                      child: isLoading
+                          ? CircularProgressIndicator(color: Appcolor.kWhite)
+                          : Text(
                         AppString.kSignIN,
                         style: TextStyle(
-                          fontSize: width*0.06,
+                          fontSize: width * 0.06,
                           fontWeight: FontWeight.bold,
-                          color:Appcolor.kWhite,
+                          color: Appcolor.kWhite,
                         ),
                       ),
                     ),
                   ),
                 ),
-                // SizedBox(height: height * 0.015),
-
-                //Spacer(),
                 Text(
                   AppString.kOrSignInWith,
-                  style: TextStyle(color: Appcolor.kgrey, fontSize:width * 0.035),
+                  style: TextStyle(
+                    color: Appcolor.kgrey,
+                    fontSize: width * 0.035,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -249,17 +237,26 @@ class _SignInPageState extends State<SignInMobileLayout> {
                       AppString.kSignInGoogle,
                       style: TextStyle(color: Appcolor.kWhite, fontSize: 18),
                     ),
-                    icon: SizedBox(width:60,child: Image.asset(AppImage.logoGoogle,width: 20,height: 20,)),
+                    icon: SizedBox(
+                      width: 60,
+                      child: Image.asset(
+                        AppImage.logoGoogle,
+                        width: 20,
+                        height: 20,
+                      ),
+                    ),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
                       Text(
                         AppString.kDon_tHaveAnAccount,
-                        style: TextStyle(fontSize: width*0.05, color:Appcolor.kgrey),
+                        style: TextStyle(
+                          fontSize: width * 0.05,
+                          color: Appcolor.kgrey,
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
@@ -269,8 +266,8 @@ class _SignInPageState extends State<SignInMobileLayout> {
                           AppString.kSign_up_now,
                           style: TextStyle(
                             decoration: TextDecoration.underline,
-                            fontSize: width*0.04,
-                              color:Appcolor.kgrey,
+                            fontSize: width * 0.04,
+                            color: Appcolor.kgrey,
                           ),
                         ),
                       ),
@@ -283,13 +280,5 @@ class _SignInPageState extends State<SignInMobileLayout> {
         ),
       ),
     );
-  }
-
-  void changePasswordVisible(bool visible) {
-    if (isNotVisible == visible) {
-      return;
-    } else {
-      isNotVisible = visible;
-    }
   }
 }
