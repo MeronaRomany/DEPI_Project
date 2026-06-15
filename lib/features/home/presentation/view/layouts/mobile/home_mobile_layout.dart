@@ -5,9 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart'; // استيراد الفاي�
 // تعديل الـ Imports للمسارات المطلقة الصحيحة داخل مشروعك لإنهاء الـ 87 خطأ
 import 'package:depi_project/features/home/data/states_city_repo.dart';
 import 'package:depi_project/features/home/data/tripadvisor_service.dart';
-import 'package:depi_project/features/home/data/model.dart';
-import 'package:depi_project/features/details/presentation/view/details_screen.dart';
 
+import '../../../../../notification/presentation/view/notification_screen.dart';
 import 'app_colors.dart';
 import 'widgets/grid_card_item.dart';
 
@@ -172,6 +171,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             _buildHomeExploreContent(),
             _buildSavedContent(),
             const Center(child: Text("Profile", style: TextStyle(color: LocalAppColor.kgrey))),
+            NotificationScreen(),
           ],
         ),
       ),
@@ -526,6 +526,8 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Saved"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notification"),
+
       ],
     );
   }

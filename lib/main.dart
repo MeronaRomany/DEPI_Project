@@ -75,7 +75,6 @@ void main()async {
         repository.updateNearbyPlaces,
       );
 
-      /// 🚀 start listening
       locationController.start();
     }
   } catch (e) {
