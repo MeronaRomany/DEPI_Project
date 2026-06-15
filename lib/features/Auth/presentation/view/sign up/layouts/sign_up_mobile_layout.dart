@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../../../../../core/constant/app_color.dart';
 import '../../../../../../core/constant/app_string.dart';
 import '../../../../../../core/routing/routes.dart';
-// import '../../services/firestore_service.dart';
 
 class SignUpMobileLayout extends StatefulWidget {
   const SignUpMobileLayout({super.key});
@@ -32,19 +31,22 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.only(left: 20.0,right: 20.0),
+          padding: EdgeInsets.only(left: 20.0, right: 20.0),
           child: Form(
             key: formkey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               spacing: 10,
               children: [
-                Image.asset(AppImage.logoMap,height: 60,width: 60,),
+                Image.asset(AppImage.logoMap, height: 60, width: 60),
                 Text(
                   AppString.kSignUP,
-                  style: TextStyle(fontSize: width * 0.06, fontWeight: FontWeight.bold,color: Appcolor.kblack),
+                  style: TextStyle(
+                    fontSize: width * 0.06,
+                    fontWeight: FontWeight.bold,
+                    color: Appcolor.kblack,
+                  ),
                 ),
-
                 Text(
                   AppString.klet_us_Know,
                   style: TextStyle(
@@ -54,7 +56,6 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                   ),
                 ),
                 SizedBox(height: height * 0.02),
-
                 TextFormField(
                   controller: username,
                   validator: (value) {
@@ -63,7 +64,7 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     }
                     return null;
                   },
-                  style: TextStyle(fontSize: 18,color: Appcolor.kgrey),
+                  style: TextStyle(fontSize: 18, color: Appcolor.kgrey),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     labelText: AppString.kFullName,
@@ -74,48 +75,34 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(
-                        color: Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(
-                          color: Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                   ),
                 ),
-
                 TextFormField(
                   controller: email,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Please, enter your email";
                     }
-
                     String pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
                     RegExp regex = RegExp(pattern);
-
                     if (!regex.hasMatch(value)) {
                       return "Please, enter a valid email";
                     }
-
                     return null;
                   },
-                  style: TextStyle(fontSize: 18,color: Appcolor.kgrey),
+                  style: TextStyle(fontSize: 18, color: Appcolor.kgrey),
                   textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
                     labelText: AppString.kEmail,
-
                     labelStyle: TextStyle(
                       fontSize: 18,
                       color: Appcolor.kgrey,
@@ -123,23 +110,16 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(
-                        color: Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color:  Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                   ),
                 ),
-
                 TextFormField(
                   controller: password,
                   validator: (value) {
@@ -151,10 +131,9 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     }
                     return null;
                   },
-                  style: TextStyle(fontSize: 20,color: Appcolor.kgrey),
+                  style: TextStyle(fontSize: 20, color: Appcolor.kgrey),
                   textInputAction: TextInputAction.search,
                   obscureText: isNotVisible,
-
                   decoration: InputDecoration(
                     labelText: AppString.kPassword,
                     labelStyle: TextStyle(
@@ -173,41 +152,33 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(
-                        color: Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Appcolor.kgrey,
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
                     ),
                   ),
                 ),
-                 SizedBox(height: height * 0.02),
-
+                SizedBox(height: height * 0.02),
                 GestureDetector(
-                  onTap: ()  {
+                  onTap: () {
                     signUp(context);
                   },
                   child: Container(
-                    height:height * 0.07,
+                    height: height * 0.07,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: Appcolor.kblack,
                       borderRadius: BorderRadius.circular(12),
                     ),
-
                     child: Center(
                       child: Text(
                         AppString.kSignUP,
                         style: TextStyle(
-                          fontSize: width*0.06,
+                          fontSize: width * 0.06,
                           fontWeight: FontWeight.bold,
                           color: Appcolor.kWhite,
                         ),
@@ -215,19 +186,17 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     ),
                   ),
                 ),
-                // SizedBox(height: height * 0.015),
-
                 Text(
                   AppString.kOrSignUPWith,
-                  style: TextStyle(fontSize:width * 0.035, fontWeight: FontWeight.bold,color: Appcolor.kgrey),
+                  style: TextStyle(
+                    fontSize: width * 0.035,
+                    fontWeight: FontWeight.bold,
+                    color: Appcolor.kgrey,
+                  ),
                 ),
-                 // SizedBox(height: height * 0.015),
-
                 GestureDetector(
-
-                  onTap: ()async{
+                  onTap: () async {
                     await AuthReo.signInWithGoogle(context);
-
                   },
                   child: Container(
                     height: height * 0.07,
@@ -236,12 +205,11 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                       color: Appcolor.kred,
                       borderRadius: BorderRadius.circular(12),
                     ),
-
                     child: Center(
                       child: Text(
                         AppString.kGmail,
                         style: TextStyle(
-                          fontSize:width*0.06,
+                          fontSize: width * 0.06,
                           fontWeight: FontWeight.bold,
                           color: Appcolor.kWhite,
                         ),
@@ -249,15 +217,16 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                     ),
                   ),
                 ),
-                // SizedBox(height: height * 0.015),
-
                 Padding(
                   padding: EdgeInsets.all(12),
                   child: Row(
                     children: [
                       Text(
                         AppString.kAlready_have_an_account,
-                        style: TextStyle(fontSize: width*0.04, color: Appcolor.kgrey),
+                        style: TextStyle(
+                          fontSize: width * 0.04,
+                          color: Appcolor.kgrey,
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
@@ -267,7 +236,7 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
                           AppString.kSignINNow,
                           style: TextStyle(
                             decoration: TextDecoration.underline,
-                            fontSize:width*0.03,
+                            fontSize: width * 0.03,
                             color: Appcolor.kgrey,
                           ),
                         ),
@@ -307,27 +276,22 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
         email.text.trim(),
       );
 
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user != null && !user.emailVerified) {
-        await user.sendEmailVerification();
-
-        print("✅ Verification Email Sent");
-      }
-
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
           title: const Text("Sign Up Successful"),
-          content: const Text(
-            "Please check your email to verify your account before logging in.",
-          ),
+          content: const Text("Welcome! Your account has been created."),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Navigator.pushReplacementNamed(context,"verfiy email");
+                // ✅ روح على Home مباشرة
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  Routes.homePage,
+                      (route) => false,
+                );
               },
               child: const Text("OK"),
             ),
@@ -350,5 +314,4 @@ class _SignUpPageState extends State<SignUpMobileLayout> {
       );
     }
   }
-
 }
