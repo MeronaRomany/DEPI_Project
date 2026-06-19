@@ -6,4 +6,6 @@ class Routes {
   static const String notif="/Notifications";
 
   static const String details = "/details";
+  static const String profile = "/profile";
+
 }

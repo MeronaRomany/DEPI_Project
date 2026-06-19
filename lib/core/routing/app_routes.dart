@@ -8,6 +8,7 @@ import '../../features/Auth/presentation/view/email verifiy/VerifyEmailPage_mobi
 import '../../features/Auth/presentation/view/Sign in/sign_in.dart';
 import '../../features/Auth/presentation/view/sign up/sign_up.dart';
 import '../../features/home/presentation/view/home_screen.dart';
+import '../../features/home/presentation/view/layouts/mobile/profile.dart';
 import '../../features/notification/presentation/view/notification_screen.dart';
 
 class AppRouter {
@@ -27,6 +28,8 @@ class AppRouter {
       case Routes.notif:
         return MaterialPageRoute(builder: (_)=>NotificationScreen());
 
+      case Routes.profile:
+        return MaterialPageRoute(builder: (_) => const Profile());
       case Routes.details:
         final args = setting.arguments as Map<String, dynamic>;
         return MaterialPageRoute(

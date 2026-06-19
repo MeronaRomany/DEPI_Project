@@ -9,6 +9,7 @@ import 'package:depi_project/features/home/data/tripadvisor_service.dart';
 import '../../../../../notification/presentation/view/notification_screen.dart';
 import 'app_colors.dart';
 import 'widgets/grid_card_item.dart';
+import 'profile.dart'; // أو المسار النسبي المباشر لملف شاشة البروفايل عندك
 
 class HomeMobileLayout extends StatefulWidget {
   const HomeMobileLayout({super.key});
@@ -157,6 +158,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+
   }
 
   @override
@@ -170,7 +172,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
           children: [
             _buildHomeExploreContent(),
             _buildSavedContent(),
-            const Center(child: Text("Profile", style: TextStyle(color: LocalAppColor.kgrey))),
+            const Profile(),
             NotificationScreen(),
           ],
         ),
