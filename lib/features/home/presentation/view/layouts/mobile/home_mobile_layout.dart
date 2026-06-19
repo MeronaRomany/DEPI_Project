@@ -7,6 +7,7 @@ import 'package:depi_project/features/home/data/tripadvisor_service.dart';
 import 'package:depi_project/features/home/data/model.dart'; // ١. إضافة استيراد الموديل
 import 'package:depi_project/features/details/presentation/view/details_screen.dart';
 
+import '../../../../../notification/presentation/view/notification_screen.dart';
 import 'app_colors.dart';
 
 class HomeMobileLayout extends StatefulWidget {
@@ -282,6 +283,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             _buildHomeExploreContent(),
             _buildSavedContent(),
             const Center(child: Text("Profile", style: TextStyle(color: LocalAppColor.kgrey))),
+            NotificationScreen(),
           ],
         ),
       ),
@@ -670,6 +672,8 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Saved"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notification"),
+
       ],
     );
   }

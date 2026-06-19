@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/routing/routes.dart';
+import '../features/notification/data/service/notifcation_service.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,12 +12,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NotificationService.navigatorKey,
       debugShowCheckedModeBanner: false,
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      initialRoute: Routes.signIn,
+
+      // theme: ThemeData.light(),
+      // darkTheme: ThemeData.dark(),
+      initialRoute:FirebaseAuth.instance.currentUser != null &&
+          FirebaseAuth.instance.currentUser!.emailVerified
+          ? Routes.homePage
+          : Routes.signIn,
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

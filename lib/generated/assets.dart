@@ -12,18 +12,15 @@ class $AssetsImagesGen {
   const $AssetsImagesGen();
 
   final AssetGenImage screenshot20260315025740 = const AssetGenImage(
-    'assets/images/Screenshot 2026-03-15 025740.png',
-  );
+      'assets/images/Screenshot 2026-03-15 025740.png');
   final AssetGenImage search = const AssetGenImage('assets/images/search.png');
-  final AssetGenImage topViewTravelKitWoodenTable = const AssetGenImage(
-    'assets/images/top-view-travel-kit-wooden-table.jpg',
-  );
 }
 
 class AssetGenImage {
   const AssetGenImage(this._assetName, {this.size, this.flavors = const {}});
 
   final String _assetName;
+
 
   final Size? size;
   final Set<String> flavors;
@@ -81,8 +78,15 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({AssetBundle? bundle, String? package}) {
-    return AssetImage(_assetName, bundle: bundle, package: package);
+  ImageProvider provider({
+    AssetBundle? bundle,
+    String? package,
+  }) {
+    return AssetImage(
+      _assetName,
+      bundle: bundle,
+      package: package,
+    );
   }
 
   Widget custom({
@@ -99,3 +103,4 @@ class AssetGenImage {
 
   String get keyName => _assetName;
 }
+

@@ -8,6 +8,7 @@ import '../../features/Auth/presentation/view/email verifiy/VerifyEmailPage_mobi
 import '../../features/Auth/presentation/view/Sign in/sign_in.dart';
 import '../../features/Auth/presentation/view/sign up/sign_up.dart';
 import '../../features/home/presentation/view/home_screen.dart';
+import '../../features/notification/presentation/view/notification_screen.dart';
 
 class AppRouter {
   static Route? generateRoute(RouteSettings setting) {
@@ -21,7 +22,11 @@ class AppRouter {
       case Routes.homePage:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case "verfiy email":
-        return MaterialPageRoute(builder: (_) => const VerifyEmailPage());
+
+        return MaterialPageRoute(builder: (_)=>VerifyEmailPage());
+      case Routes.notif:
+        return MaterialPageRoute(builder: (_)=>NotificationScreen());
+
       case Routes.details:
         final args = setting.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
