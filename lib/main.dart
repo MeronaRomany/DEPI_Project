@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:device_preview/device_preview.dart';
 import 'App/my_app.dart';
@@ -13,6 +14,7 @@ import 'features/notification/data/service/location_service.dart';
 import 'features/notification/data/repo/place_repository.dart';
 import 'features/notification/data/service/notifcation_service.dart';
 import 'features/notification/presentation/cubit/get_it.dart';
+import 'features/notification/presentation/cubit/notification_cubit.dart';
 import 'firebase_options.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 void main()async {
@@ -36,14 +38,12 @@ void main()async {
     final token = await FirebaseAppCheck.instance.getToken(true);
 
 
-
     final db = await $FloorAppDatabase
         .databaseBuilder('app.db')
         .build();
 
     //Notification
-   await NotificationService.initNotifications();
-
+    await NotificationService.initNotifications();
 
 
     /// 📍 geofence
@@ -54,7 +54,6 @@ void main()async {
     await geofenceService.requestPermission();
 
     if (granted) {
-
       geofenceService.setup();
 
       /// services
@@ -82,15 +81,21 @@ void main()async {
   }
 
   setup();
-  runApp(
-    DevicePreview(
-        enabled: false,
-        builder: (context) => MyApp(), // Wrap your app
-      ),
 
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => getIt<NotificationCubit>(),
+        ),
+      ],
+      child: DevicePreview(
+        enabled: false,
+        builder: (context) => const MyApp(),
+      ),
+    ),
   );
 }
-
 
 
 

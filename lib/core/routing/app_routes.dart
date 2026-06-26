@@ -12,6 +12,8 @@ import '../../features/notification/presentation/view/notification_screen.dart';
 
 class AppRouter {
   static Route? generateRoute(RouteSettings setting) {
+    debugPrint("CURRENT ROUTE = ${setting.name}");
+
     switch (setting.name) {
       case Routes.signIn:
         return MaterialPageRoute(builder: (_) => const SignIn());

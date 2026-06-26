@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../presentation/cubit/get_it.dart';
-import '../../presentation/cubit/notification_cubit.dart';
+import '../../../../core/routing/routes.dart';
 import '../../presentation/view/notification_screen.dart';
 
 class NotificationService {
@@ -12,13 +10,9 @@ class NotificationService {
  GlobalKey<NavigatorState>();
 
  static void onTap(NotificationResponse details) {
-   navigatorKey.currentState?.push(
-     MaterialPageRoute(
-       builder: (_) =>  BlocProvider.value(
-         value: getIt<NotificationCubit>(),
-         child: NotificationScreen(),
-       ),
-     ),
+   navigatorKey.currentState?.pushNamed(
+     Routes.notif,
+
    );
  }
  static Future<void> initNotifications() async {
@@ -27,7 +21,7 @@ class NotificationService {
       iOS: DarwinInitializationSettings(),
     );
 
-    _plugin.initialize(initializationSettings,
+    await _plugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse:onTap,
         onDidReceiveBackgroundNotificationResponse:onTap,
         );

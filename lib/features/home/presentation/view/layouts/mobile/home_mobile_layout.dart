@@ -161,22 +161,35 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      bottomNavigationBar: _buildBottomNav(),
-      body: SafeArea(
-        child: IndexedStack(
-          index: selectedNavIndex,
-          children: [
-            _buildHomeExploreContent(),
-            _buildSavedContent(),
-            const Center(child: Text("Profile", style: TextStyle(color: LocalAppColor.kgrey))),
-            NotificationScreen(),
-          ],
+    return PopScope(
+      canPop: selectedNavIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+
+        if (!didPop) {
+          setState(() {
+            selectedNavIndex = 0;
+          });
+        }
+
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF8F9FA),
+        bottomNavigationBar: _buildBottomNav(),
+        body: SafeArea(
+          child: IndexedStack(
+            index: selectedNavIndex,
+            children: [
+              _buildHomeExploreContent(),
+              _buildSavedContent(),
+              const Center(
+                child: Text("Profile"),
+              ),
+              NotificationScreen(),
+            ],
+          ),
         ),
       ),
-    );
-  }
+    );  }
 
   Widget _buildHomeExploreContent() {
     final width = MediaQuery.of(context).size.width;

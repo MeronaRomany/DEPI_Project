@@ -151,48 +151,55 @@ class _SignInPageState extends State<SignInMobileLayout> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: isLoading ? null : () async {
+                  onTap: () async {
                     if (formkey.currentState!.validate()) {
-                      setState(() => isLoading = true);
-                      try {
-                        await FirebaseAuth.instance
-                            .signInWithEmailAndPassword(
-                          email: email.text.trim(),
-                          password: password.text.trim(),
+                      await FirebaseAuth.instance
+                          .signInWithEmailAndPassword(
+                        email: email.text.trim(),
+                        password: password.text.trim(),
+                      )
+                          .then((data) async {
+                        if (!data.user!.emailVerified) {
+                          await FirebaseAuth.instance.signOut();
+
+                          showDialog(
+                            context: context,
+                            builder: (context) => const AlertDialog(
+                              title: Text("Email not verified"),
+                              content: Text(
+                                "يرجى تأكيد البريد الإلكتروني أولاً",
+                              ),
+                            ),
+                          );
+
+                          return;
+                        }
+
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("Login successful"),
+                            content: Text("Welcome ${data.user!.email}"),
+                          ),
                         );
+
                         Navigator.pushNamedAndRemoveUntil(
                           context,
                           Routes.homePage,
                               (route) => false,
                         );
-                      } on FirebaseAuthException catch (e) {
-                        setState(() => isLoading = false);
-                        String message = "Please check your email or password.";
-                        if (e.code == 'user-not-found') {
-                          message = "No account found. Please sign up first.";
-                        } else if (e.code == 'wrong-password') {
-                          message = "Wrong password. Please try again.";
-                        }
+                      })
+                          .catchError((error) {
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text("Login Failed"),
-                            content: Text(message),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  if (e.code == 'user-not-found') {
-                                    Navigator.pushNamed(
-                                        context, Routes.signUp);
-                                  }
-                                },
-                                child: Text("OK"),
-                              ),
-                            ],
+                          builder: (context) => const AlertDialog(
+                            title: Text("Login unsuccessful"),
+                            content: Text(
+                              "Please check your email or password.",
+                            ),
                           ),
                         );
-                      }
+                      });
                     }
                   },
                   child: Container(
