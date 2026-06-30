@@ -45,7 +45,4 @@ class NotificationService {
    );
    await _plugin.show(id, "Near place", body, notificationDetails);
  }
-
-
-
 }

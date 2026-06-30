@@ -4,6 +4,7 @@ class Routes {
   static const String signUp="/signUp";
   static const String forgetPass="/forgetPassword";
   static const String notif="/Notifications";
+  static const String page_map="/PageMap";
 
   static const String details = "/details";
 }

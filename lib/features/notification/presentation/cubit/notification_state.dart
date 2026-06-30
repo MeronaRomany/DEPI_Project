@@ -7,7 +7,9 @@ final class NotificationInitial extends NotificationState {}
 
 final class NotificationSuccess extends NotificationState {
    List<String> namePlaces;
-   NotificationSuccess({required this.namePlaces});
+   List<double> lat;
+   List<double> lon;
+   NotificationSuccess({required this.namePlaces,required this.lat,required this.lon});
 }
 final class NotificationFail extends NotificationState {
   String messageError;

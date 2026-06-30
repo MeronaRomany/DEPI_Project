@@ -9,12 +9,13 @@ import '../../features/Auth/presentation/view/Sign in/sign_in.dart';
 import '../../features/Auth/presentation/view/sign up/sign_up.dart';
 import '../../features/home/presentation/view/home_screen.dart';
 import '../../features/notification/presentation/view/notification_screen.dart';
+import '../../features/display_map/view/page_map.dart';
 
 class AppRouter {
-  static Route? generateRoute(RouteSettings setting) {
-    debugPrint("CURRENT ROUTE = ${setting.name}");
+  static Route? generateRoute(RouteSettings settings) {
+    debugPrint("CURRENT ROUTE = ${settings.name}");
 
-    switch (setting.name) {
+    switch (settings.name) {
       case Routes.signIn:
         return MaterialPageRoute(builder: (_) => const SignIn());
       case Routes.signUp:
@@ -28,9 +29,15 @@ class AppRouter {
         return MaterialPageRoute(builder: (_)=>VerifyEmailPage());
       case Routes.notif:
         return MaterialPageRoute(builder: (_)=>NotificationScreen());
+      case Routes.page_map:
+        final args = settings.arguments as Map<String, dynamic>;
 
+        return MaterialPageRoute(builder: (_)=>MapPage(
+          lat: args['lat'],
+          lon: args['lon'],));
+       
       case Routes.details:
-        final args = setting.arguments as Map<String, dynamic>;
+        final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => DetailsScreen(
             // بناء الـ Object مانيوال هنا مباشرة للهروب من مشكلة الـ fromJson تماماً وضمان عمل الكود
