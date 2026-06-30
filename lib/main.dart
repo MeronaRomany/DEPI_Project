@@ -3,7 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:device_preview/device_preview.dart';
+
 import 'App/my_app.dart';
+
+import 'core/routing/app_routes.dart';
+import 'features/Auth/presentation/view/sign up/layouts/sign_up_mobile_layout.dart';
+import 'features/home/presentation/view/layouts/mobile/splash_screen.dart';
+import 'features/Auth/presentation/view/Sign in/layouts/sign_in_mobile_layout.dart';
 import 'features/notification/data/controller/LocationTracker.dart';
 import 'features/notification/data/api/overpass_api.dart';
 import 'features/notification/data/controller/location_controller.dart';
@@ -15,52 +21,35 @@ import 'features/notification/data/service/notifcation_service.dart';
 import 'features/notification/presentation/cubit/get_it.dart';
 import 'firebase_options.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-void main()async {
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
     await Future.wait([
-
       dotenv.load(fileName: ".env"),
-
       Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       ),
-
     ]);
 
     await FirebaseAppCheck.instance.activate(
       providerAndroid: AndroidDebugProvider(),
     );
 
-    final token = await FirebaseAppCheck.instance.getToken(true);
+    final db = await $FloorAppDatabase.databaseBuilder('app.db').build();
 
+    await NotificationService.initNotifications();
 
-
-    final db = await $FloorAppDatabase
-        .databaseBuilder('app.db')
-        .build();
-
-    //Notification
-   await NotificationService.initNotifications();
-
-
-
-    /// 📍 geofence
     final geofenceService = GeofenceService();
 
-    /// permissions
-    bool granted =
-    await geofenceService.requestPermission();
+    bool granted = await geofenceService.requestPermission();
 
     if (granted) {
-
       geofenceService.setup();
 
-      /// services
       final locationService = LocationService();
 
-      /// repository
       final repository = PlaceRepository(
         OverpassApi(),
         db,
@@ -69,7 +58,6 @@ void main()async {
         geofenceService,
       );
 
-      /// controller
       final locationController = LocationController(
         locationService,
         repository.updateNearbyPlaces,
@@ -82,15 +70,24 @@ void main()async {
   }
 
   setup();
+
   runApp(
     DevicePreview(
-        enabled: false,
-        builder: (context) => MyApp(), // Wrap your app
-      ),
+      enabled: false,
+      builder: (context) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        locale: const Locale('en', 'US'),
 
+        home: const SplashScreen(),
+
+        // ✅ أهم سطر
+        onGenerateRoute: AppRouter.generateRoute,
+
+        routes: {
+          '/signIn': (context) => const SignInMobileLayout(),
+          '/signUp': (context) => const SignUpMobileLayout(),
+        },
+      ),
+    ),
   );
 }
-
-
-
-

@@ -39,24 +39,32 @@ class AuthReo{
 
 
   static Future<void> signInWithGoogle(BuildContext context) async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return;
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+      if (googleUser == null) {
+        print("User canceled");
+        return;
+      }
 
-    // Once signed in, return the UserCredential
-    await FirebaseAuth.instance.signInWithCredential(credential);
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      Routes.homePage,
-          (route) => false,
-    );  }
+      final GoogleSignInAuthentication googleAuth =
+      await googleUser.authentication;
 
-}
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await FirebaseAuth.instance.signInWithCredential(credential);
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        Routes.homePage,
+            (route) => false,
+      );
+    } catch (e) {
+      print("GOOGLE ERROR = $e");
+    }
+  }
+
+  }

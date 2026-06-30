@@ -4,13 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:depi_project/features/home/data/states_city_repo.dart';
 import 'package:depi_project/features/home/data/tripadvisor_service.dart';
-import 'package:depi_project/features/home/data/model.dart'; // ١. إضافة استيراد الموديل
+import 'package:depi_project/features/home/data/model.dart';
 import 'package:depi_project/features/details/presentation/view/details_screen.dart';
 
 import '../../../../../notification/presentation/view/notification_screen.dart';
 import 'app_colors.dart';
 import 'widgets/grid_card_item.dart';
-import 'profile.dart'; // أو المسار النسبي المباشر لملف شاشة البروفايل عندك
+import 'profile.dart';
+import 'saved_screen.dart'; // استيراد صفحة المفضلة الجديدة هنا
 
 class HomeMobileLayout extends StatefulWidget {
   const HomeMobileLayout({super.key});
@@ -33,10 +34,9 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
   List<Map<String, dynamic>> apiSearchResults = [];
   bool isLoading = false;
 
-  // متغيرات الـ Load More
   bool _isLoadingMore = false;
   int _currentOffset = 0;
-  static const String cairoLocationId = "294019"; // Cairo ID
+  static const String cairoLocationId = "294019";
 
   @override
   void initState() {
@@ -60,7 +60,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
 
     if (selectedCategory == "All" || selectedCategory == "Places") {
       for (var s in states) {
-        // إضافة بيانات ديناميكية للدول
         String stateName = s['name'] ?? 'Egypt';
         allItems.add({
           "id": s['id'],
@@ -68,9 +67,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
           "image": s['image'],
           "location": s['details']?['location'] ?? stateName,
           "rating": s['details']?['reviews']?[0]?['rating'] ?? 4.5,
-          // تعديل: وصف ديناميكي يعتمد على اسم الدولة
           "description": "Discover the wonders of $stateName. A captivating destination offering rich history, unique culture, and unforgettable experiences for every traveler.",
-          // إحداثيات تقريبية (باستخدام وسط مصر كبديل)
           "latitude": 26.8206,
           "longitude": 30.8025,
           "webUrl": "https://en.wikipedia.org/wiki/${stateName.replaceAll(' ', '_')}",
@@ -85,9 +82,8 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
           "image": c['image'],
           "location": c['details']?['location'] ?? c['stateId'] ?? "Egypt",
           "rating": 4.7,
-          // وصف ديناميكي للمدينة
           "description": "$cityName is a vibrant city in ${c['stateId']}. Experience the local culture, delicious cuisine, and historical landmarks.",
-          "latitude": 30.0444, // Default Cairo
+          "latitude": 30.0444,
           "longitude": 31.2357,
           "webUrl": "https://en.wikipedia.org/wiki/${cityName.replaceAll(' ', '_')}",
           "category": "city",
@@ -147,7 +143,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
     return allItems;
   }
 
-  // دالة جلب بيانات التصنيف (بدون Load More)
   Future<void> _loadCategoryData(String category) async {
     if (category == "All") {
       setState(() {
@@ -190,7 +185,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
     }
   }
 
-  // دالة Load More
   Future<void> _loadMoreData() async {
     if (_isLoadingMore) return;
     if (selectedCategory == "All") return;
@@ -233,7 +227,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
       setState(() {
         isLoading = true;
         searchQuery = cleanValue;
-        selectedCategory = "All"; // Reset category on search
+        selectedCategory = "All";
         apiSearchResults = [];
       });
 
@@ -271,7 +265,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-
   }
 
   @override
@@ -284,7 +277,10 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
           index: selectedNavIndex,
           children: [
             _buildHomeExploreContent(),
-            _buildSavedContent(),
+            SavedScreen( // تم استبدال الكود القديم بالشاشة الجديدة هنا
+              savedPlaces: savedPlaces,
+              onToggleFavorite: _toggleFavorite,
+            ),
             const Profile(),
             NotificationScreen(),
           ],
@@ -301,7 +297,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
 
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollInfo) {
-        // Load More Logic
         if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoadingMore) {
           if (apiSearchResults.isNotEmpty) {
             _loadMoreData();
@@ -311,7 +306,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
       },
       child: CustomScrollView(
         slivers: [
-          // Header
           SliverToBoxAdapter(
             child: Stack(
               children: [
@@ -375,7 +369,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             ),
           ),
 
-          // Search Bar
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
@@ -444,7 +437,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             ),
           ),
 
-          // Categories
           SliverToBoxAdapter(
             child: SizedBox(
               height: 50,
@@ -465,7 +457,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                           apiSearchResults = [];
                         }
                       });
-                      // استدعاء الـ API عند اختيار التصنيف
                       if (cat != "All") {
                         _loadCategoryData(cat);
                       } else {
@@ -501,7 +492,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             ),
           ),
 
-          // Title & Count
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 10),
@@ -521,7 +511,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             ),
           ),
 
-          // Grid View
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: Builder(
@@ -561,7 +550,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
                         item: item,
                         isSaved: isSaved,
                         onTap: () {
-                          // ٢. تحويل Map إلى PlaceModel قبل الإرسال للشاشة
                           final placeModel = PlaceModel.fromJson(item, item['category'] ?? 'general');
                           Navigator.push(
                             context,
@@ -584,7 +572,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
             ),
           ),
 
-          // Loader for Load More
           if (_isLoadingMore)
             const SliverToBoxAdapter(
               child: Padding(
@@ -596,69 +583,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
           const SliverToBoxAdapter(child: SizedBox(height: 25)),
         ],
       ),
-    );
-  }
-
-  Widget _buildSavedContent() {
-    return CustomScrollView(
-      slivers: [
-        const SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              "Saved Places",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: LocalAppColor.kblack),
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: Builder(
-            builder: (context) {
-              if (savedPlaces.isEmpty) {
-                return const SliverToBoxAdapter(
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(80.0),
-                      child: Column(
-                        children: [
-                          Icon(Icons.favorite_border, size: 50, color: LocalAppColor.kgrey),
-                          SizedBox(height: 12),
-                          Text("No saved places yet", style: TextStyle(color: LocalAppColor.kgrey, fontSize: 15)),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }
-              return SliverGrid(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) => GridCardItem(
-                    item: savedPlaces[index],
-                    isSaved: true,
-                    onTap: () {
-                      // ٣. تحويل Map إلى PlaceModel هنا أيضاً
-                      final placeModel = PlaceModel.fromJson(savedPlaces[index], savedPlaces[index]['category'] ?? 'general');
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => DetailsScreen(place: placeModel)),
-                      );
-                    },
-                    onFavoriteTap: () => _toggleFavorite(savedPlaces[index]),
-                  ),
-                  childCount: savedPlaces.length,
-                ),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.78,
-                ),
-              );
-            },
-          ),
-        )
-      ],
     );
   }
 
@@ -676,7 +600,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Saved"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notification"),
-
       ],
     );
   }
