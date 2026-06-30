@@ -6,10 +6,10 @@ sealed class NotificationState {}
 final class NotificationInitial extends NotificationState {}
 
 final class NotificationSuccess extends NotificationState {
-   List<String> namePlaces;
+   final List<String> namePlaces;
    NotificationSuccess({required this.namePlaces});
 }
 final class NotificationFail extends NotificationState {
-  String messageError;
+  final String messageError;
   NotificationFail({required this.messageError});
 }

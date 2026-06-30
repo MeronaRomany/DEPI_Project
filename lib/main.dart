@@ -1,8 +1,14 @@
+import 'package:depi_project/core/networking/dio_helper.dart';
+import 'package:depi_project/features/travel/data/db/travel_dao.dart';
+import 'package:depi_project/features/travel/data/db/travel_database.dart';
+import 'package:depi_project/features/travel/data/models/travel_item_entity.dart';
+import 'package:depi_project/features/travel/data/remote/travel_api_service.dart';
+import 'package:depi_project/features/travel/data/repo/travel_repository.dart';
+import 'package:depi_project/features/travel/presentation/controller/travel_controller.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:device_preview/device_preview.dart';
+import 'package:get/get.dart';
 import 'App/my_app.dart';
 import 'features/notification/data/controller/LocationTracker.dart';
 import 'features/notification/data/api/overpass_api.dart';
@@ -15,52 +21,42 @@ import 'features/notification/data/service/notifcation_service.dart';
 import 'features/notification/presentation/cubit/get_it.dart';
 import 'firebase_options.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
-void main()async {
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  
   try {
-    await Future.wait([
+    await dotenv.load(fileName: "env");
+  } catch (e) {
+    debugPrint("dotenv load error: $e");
+  }
 
-      dotenv.load(fileName: ".env"),
+  DioHelper.init();
 
-      Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      ),
+  
+  await _initTravelController();
 
-    ]);
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
     await FirebaseAppCheck.instance.activate(
       providerAndroid: AndroidDebugProvider(),
     );
+    await FirebaseAppCheck.instance.getToken(true);
 
-    final token = await FirebaseAppCheck.instance.getToken(true);
+    final db = await $FloorAppDatabase.databaseBuilder('app.db').build();
 
+    await NotificationService.initNotifications();
 
-
-    final db = await $FloorAppDatabase
-        .databaseBuilder('app.db')
-        .build();
-
-    //Notification
-   await NotificationService.initNotifications();
-
-
-
-    /// 📍 geofence
     final geofenceService = GeofenceService();
-
-    /// permissions
-    bool granted =
-    await geofenceService.requestPermission();
+    final bool granted = await geofenceService.requestPermission();
 
     if (granted) {
-
       geofenceService.setup();
-
-      /// services
       final locationService = LocationService();
-
-      /// repository
       final repository = PlaceRepository(
         OverpassApi(),
         db,
@@ -68,30 +64,52 @@ void main()async {
         LocationTracker(),
         geofenceService,
       );
-
-      /// controller
       final locationController = LocationController(
         locationService,
         repository.updateNearbyPlaces,
       );
-
-      /// 🚀 start listening
       locationController.start();
     }
   } catch (e) {
-    debugPrint("Error during initialization: $e");
+    debugPrint("Firebase/Notification init error: $e");
   }
 
   setup();
-  runApp(
-    DevicePreview(
-        enabled: !kReleaseMode,
-        builder: (context) => MyApp(), // Wrap your app
-      ),
-
-  );
+  runApp(const MyApp());
 }
 
 
+Future<void> _initTravelController() async {
+  TravelDao dao;
 
+  try {
+    final db =
+        await $FloorTravelDatabase.databaseBuilder('travel.db').build();
+    dao = db.travelDao;
+    debugPrint("TravelDatabase opened successfully.");
+  } catch (e) {
+    debugPrint("TravelDatabase failed, using in-memory fallback: $e");
+    dao = _InMemoryTravelDao();
+  }
 
+  Get.put(
+    TravelController(TravelRepository(dao, TravelApiService())),
+    permanent: true,
+  );
+}
+
+class _InMemoryTravelDao implements TravelDao {
+  @override
+  Future<List<TravelItemEntity>> getByCategory(
+          String category, String locationId) async =>
+      [];
+
+  @override
+  Future<void> insertItems(List<TravelItemEntity> items) async {}
+
+  @override
+  Future<void> deleteByCategory(String category, String locationId) async {}
+
+  @override
+  Future<void> clearAll() async {}
+}
