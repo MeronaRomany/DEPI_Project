@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:device_preview/device_preview.dart';
 
@@ -17,6 +18,7 @@ import 'features/notification/data/service/location_service.dart';
 import 'features/notification/data/repo/place_repository.dart';
 import 'features/notification/data/service/notifcation_service.dart';
 import 'features/notification/presentation/cubit/get_it.dart';
+import 'features/notification/presentation/cubit/notification_cubit.dart';
 import 'firebase_options.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 
@@ -70,7 +72,13 @@ void main() async {
   setup();
 
   runApp(
-    DevicePreview(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => getIt<NotificationCubit>(),
+          ),
+        ],
+   child:  DevicePreview(
       enabled: false,
       builder: (context) => MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -78,14 +86,15 @@ void main() async {
 
         home: const SplashScreen(),
 
-        // ✅ أهم سطر
-        onGenerateRoute: AppRouter.generateRoute,
-
-        routes: {
-          '/signIn': (context) => const SignInMobileLayout(),
-          '/signUp': (context) => const SignUpMobileLayout(),
-        },
+        // // ✅ أهم سطر
+        // onGenerateRoute: AppRouter.generateRoute,
+        //
+        // // routes: {
+        // //   '/signIn': (context) => const SignInMobileLayout(),
+        // //   '/signUp': (context) => const SignUpMobileLayout(),
+        // // },
       ),
     ),
+  )
   );
 }

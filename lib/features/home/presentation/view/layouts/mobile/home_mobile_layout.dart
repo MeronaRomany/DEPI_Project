@@ -271,18 +271,7 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       bottomNavigationBar: _buildBottomNav(),
-      //test notific
-      appBar: AppBar(leading: IconButton(onPressed: () async {
-        try {
-          await NotificationService.scheduleNotifications(
-            id: 1,
-            body: "test",
-          );
-          print("Notification scheduled");
-        } catch (e) {
-          print(e);
-        }
-      }, icon: Icon(Icons.notifications))),
+
       body: SafeArea(
         child: IndexedStack(
           index: selectedNavIndex,
