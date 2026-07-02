@@ -1,15 +1,14 @@
 import 'package:depi_project/features/home/presentation/view/layouts/mobile/widgets/grid_card_item.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:depi_project/features/home/data/states_city_repo.dart';
 import 'package:depi_project/features/home/data/tripadvisor_service.dart';
 import 'package:depi_project/features/home/data/model.dart';
 import 'package:depi_project/features/details/presentation/view/details_screen.dart';
 
+import '../../../../../notification/data/service/notifcation_service.dart';
 import '../../../../../notification/presentation/view/notification_screen.dart';
 import 'app_colors.dart';
-import 'widgets/grid_card_item.dart';
 import 'profile.dart';
 import 'saved_screen.dart'; // استيراد صفحة المفضلة الجديدة هنا
 
@@ -272,6 +271,18 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       bottomNavigationBar: _buildBottomNav(),
+      //test notific
+      appBar: AppBar(leading: IconButton(onPressed: () async {
+        try {
+          await NotificationService.scheduleNotifications(
+            id: 1,
+            body: "test",
+          );
+          print("Notification scheduled");
+        } catch (e) {
+          print(e);
+        }
+      }, icon: Icon(Icons.notifications))),
       body: SafeArea(
         child: IndexedStack(
           index: selectedNavIndex,

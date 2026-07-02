@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:depi_project/core/constant/app_color.dart';
 
 class HelpSupportView extends StatelessWidget {
-  const HelpSupportView({Key? key}) : super(key: key);
+  const HelpSupportView({super.key});
 
   @override
   Widget build(BuildContext context) {

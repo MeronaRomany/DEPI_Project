@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constant/app_color.dart';
 
 class CustomCategoryItem extends StatelessWidget {
-  CustomCategoryItem({super.key,required this.text,this.isSelected =false});
+  const CustomCategoryItem({super.key,required this.text,this.isSelected =false});
   final String text;
   final bool isSelected;
 

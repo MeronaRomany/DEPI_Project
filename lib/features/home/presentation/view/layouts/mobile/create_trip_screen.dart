@@ -651,7 +651,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                       width: 80,
                       height: 70,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         width: 80,
                         height: 70,
                         color: Colors.grey.shade200,
@@ -801,7 +801,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
                             width: 46,
                             height: 46,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
+                            errorBuilder: (_, _, _) => Container(
                               width: 46,
                               height: 46,
                               color: Colors.grey.shade200,

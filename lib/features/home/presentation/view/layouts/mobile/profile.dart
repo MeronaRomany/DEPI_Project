@@ -8,7 +8,7 @@ import 'package:depi_project/core/routing/routes.dart';
 import 'help_support_view.dart';
 
 class Profile extends StatelessWidget {
-  const Profile({Key? key}) : super(key: key);
+  const Profile({super.key});
 
   @override
   Widget build(BuildContext context) {
