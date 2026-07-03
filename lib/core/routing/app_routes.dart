@@ -1,6 +1,5 @@
 import 'package:depi_project/core/routing/routes.dart';
 import 'package:depi_project/features/details/presentation/view/details_screen.dart';
-import 'package:depi_project/features/home/data/model.dart'; // استيراد الموديل
 import 'package:flutter/material.dart';
 
 import '../../features/Auth/presentation/view/forget password/forget_password.dart';
@@ -8,6 +7,8 @@ import '../../features/Auth/presentation/view/email verifiy/VerifyEmailPage_mobi
 import '../../features/Auth/presentation/view/Sign in/sign_in.dart';
 import '../../features/Auth/presentation/view/sign up/sign_up.dart';
 import '../../features/home/presentation/view/home_screen.dart';
+import '../../features/my_visit_places/data/model.dart';
+import '../../features/profile/view/profile.dart';
 import '../../features/notification/presentation/view/notification_screen.dart';
 import '../../features/display_map/view/page_map.dart';
 
@@ -24,10 +25,24 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ForgetPassword());
       case Routes.homePage:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
-      case "verfiy email":
-
-        return MaterialPageRoute(builder: (_)=>VerifyEmailPage());
+      case Routes.verifyEmail:
+        return MaterialPageRoute(builder: (_) => const VerifyEmailPage());
       case Routes.notif:
+        return MaterialPageRoute(builder: (_) => const NotificationScreen());
+
+      case Routes.profile:
+        return MaterialPageRoute(builder: (_) => const Profile());
+      case Routes.details:
+        final args = setting.arguments as Map<String, dynamic>? ?? {};
+        final PlaceModel place = PlaceModel(
+          id: args['id']?.toString() ?? '',
+          name: args['name'] ?? '',
+          image: args['image'] ?? '',
+          location: args['location'] ?? 'Egypt',
+          rating: (args['rating'] ?? 4.5).toDouble(),
+          category: args['category'] ?? 'general',
+          description: args['description'] ?? '',
+        );
         return MaterialPageRoute(builder: (_)=>NotificationScreen());
       case Routes.page_map:
         final args = settings.arguments as Map<String, dynamic>;
@@ -39,18 +54,7 @@ class AppRouter {
       case Routes.details:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-          builder: (_) => DetailsScreen(
-            // بناء الـ Object مانيوال هنا مباشرة للهروب من مشكلة الـ fromJson تماماً وضمان عمل الكود
-            place: PlaceModel(
-              id: args['id']?.toString() ?? '',
-              name: args['name'] ?? '',
-              image: args['image'] ?? '',
-              location: args['location'] ?? 'Egypt',
-              rating: (args['rating'] ?? 4.5).toDouble(),
-              category: args['category'] ?? 'state',
-              description: args['description'] ?? '',
-            ),
-          ),
+          builder: (_) => DetailsScreen(place: place),
         );
     }
     return MaterialPageRoute(

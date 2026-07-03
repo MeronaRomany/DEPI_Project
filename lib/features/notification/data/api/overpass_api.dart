@@ -38,15 +38,17 @@ out center;
       
       final data = res.data;
       
-      final elements = (data['elements'] as List)
+      final elementsList = data['elements'];
+      if (elementsList is! List) {
+        return [];
+      }
+      
+      final elements = elementsList
           .map((e) => e as Map<String, dynamic>)
           .toList();
-      print("===============api$elements");
       return elements;
 
     } on DioException catch (e) {
-      print("STATUS: ${e.response?.statusCode}");
-      print("BODY: ${e.response?.data}");
       return [];
     }
   }

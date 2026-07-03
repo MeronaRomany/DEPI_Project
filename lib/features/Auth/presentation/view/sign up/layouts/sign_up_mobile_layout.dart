@@ -1,11 +1,10 @@
-import 'package:depi_project/core/constant/app_image.dart';
-import 'package:depi_project/features/Auth/data/repo.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:depi_project/core/constant/app_color.dart';
+import 'package:depi_project/core/constant/app_string.dart';
 import 'package:flutter/material.dart';
-
-import '../../../../../../core/constant/app_color.dart';
-import '../../../../../../core/constant/app_string.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../../core/constant/app_image.dart';
 import '../../../../../../core/routing/routes.dart';
+import '../../../cubit/auth_cubit.dart';
 
 class SignUpMobileLayout extends StatefulWidget {
   const SignUpMobileLayout({super.key});
@@ -16,302 +15,234 @@ class SignUpMobileLayout extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpMobileLayout> {
   final formkey = GlobalKey<FormState>();
-  TextEditingController username = TextEditingController();
-  TextEditingController password = TextEditingController();
-  TextEditingController email = TextEditingController();
+  final username = TextEditingController();
+  final email = TextEditingController();
+  final password = TextEditingController();
   bool isNotVisible = true;
-  late AuthReo usersFireStore = AuthReo();
+
+  @override
+  void dispose() {
+    username.dispose();
+    email.dispose();
+    password.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      backgroundColor: Appcolor.kWhite,
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(left: 20.0, right: 20.0),
-          child: Form(
-            key: formkey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              spacing: 10,
-              children: [
-                Image.asset(AppImage.logoMap, height: 60, width: 60),
-                Text(
-                  AppString.kSignUP,
-                  style: TextStyle(
-                    fontSize: width * 0.06,
-                    fontWeight: FontWeight.bold,
-                    color: Appcolor.kblack,
-                  ),
-                ),
-                Text(
-                  AppString.klet_us_Know,
-                  style: TextStyle(
-                    fontSize: width * 0.04,
-                    fontWeight: FontWeight.bold,
-                    color: Appcolor.kgrey,
-                  ),
-                ),
-                SizedBox(height: height * 0.02),
-                TextFormField(
-                  controller: username,
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return "please, Enter your Full name";
-                    }
-                    return null;
-                  },
-                  style: TextStyle(fontSize: 18, color: Appcolor.kgrey),
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    labelText: AppString.kFullName,
-                    labelStyle: TextStyle(
-                      fontSize: 18,
-                      color: Appcolor.kgrey,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                  ),
-                ),
-                TextFormField(
-                  controller: email,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please, enter your email";
-                    }
-                    String pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
-                    RegExp regex = RegExp(pattern);
-                    if (!regex.hasMatch(value)) {
-                      return "Please, enter a valid email";
-                    }
-                    return null;
-                  },
-                  style: TextStyle(fontSize: 18, color: Appcolor.kgrey),
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    labelText: AppString.kEmail,
-                    labelStyle: TextStyle(
-                      fontSize: 18,
-                      color: Appcolor.kgrey,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                  ),
-                ),
-                TextFormField(
-                  controller: password,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "please, Enter your password";
-                    }
-                    if (value.length < 6) {
-                      return "please, should be at least 6 char";
-                    }
-                    return null;
-                  },
-                  style: TextStyle(fontSize: 20, color: Appcolor.kgrey),
-                  textInputAction: TextInputAction.search,
-                  obscureText: isNotVisible,
-                  decoration: InputDecoration(
-                    labelText: AppString.kPassword,
-                    labelStyle: TextStyle(
-                      fontSize: 20,
-                      color: Appcolor.kgrey,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        changePasswordVisible(!isNotVisible);
-                        setState(() {});
-                      },
-                      icon: Icon(
-                        isNotVisible ? Icons.visibility : Icons.visibility_off,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Appcolor.kgrey, width: 2.0),
-                    ),
-                  ),
-                ),
-                SizedBox(height: height * 0.02),
-                GestureDetector(
-                  onTap: () {
-                    signUp(context);
-                  },
-                  child: Container(
-                    height: height * 0.07,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Appcolor.kblack,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        AppString.kSignUP,
-                        style: TextStyle(
-                          fontSize: width * 0.06,
-                          fontWeight: FontWeight.bold,
-                          color: Appcolor.kWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Text(
-                  AppString.kOrSignUPWith,
-                  style: TextStyle(
-                    fontSize: width * 0.035,
-                    fontWeight: FontWeight.bold,
-                    color: Appcolor.kgrey,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    await AuthReo.signInWithGoogle(context);
-                  },
-                  child: Container(
-                    height: height * 0.07,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Appcolor.kred,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        AppString.kGmail,
-                        style: TextStyle(
-                          fontSize: width * 0.06,
-                          fontWeight: FontWeight.bold,
-                          color: Appcolor.kWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      Text(
-                        AppString.kAlready_have_an_account,
-                        style: TextStyle(
-                          fontSize: width * 0.04,
-                          color: Appcolor.kgrey,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, Routes.signIn);
-                        },
-                        child: Text(
-                          AppString.kSignINNow,
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            fontSize: width * 0.03,
-                            color: Appcolor.kgrey,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            Routes.homePage,
+            (route) => false,
+          );
+        } else if (state is AuthError) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text("Registration Error"),
+              content: Text(state.message),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("OK"),
                 ),
               ],
             ),
+          );
+        }
+      },
+      builder: (context, state) {
+        final isLoading = state is AuthLoading;
+        return Scaffold(
+          backgroundColor: Appcolor.kWhite,
+          resizeToAvoidBottomInset: false,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Form(
+                key: formkey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Image.asset(AppImage.logoMap, height: 60, width: 60),
+                    const SizedBox(height: 10),
+                    Text(
+                      AppString.kSignUP,
+                      style: TextStyle(
+                        fontSize: width * 0.06,
+                        fontWeight: FontWeight.bold,
+                        color: Appcolor.kblack,
+                      ),
+                    ),
+                    Text(
+                      AppString.klet_us_Know,
+                      style: TextStyle(
+                        fontSize: width * 0.04,
+                        fontWeight: FontWeight.bold,
+                        color: Appcolor.kgrey,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildTextField(username, AppString.kFullName, false),
+                    const SizedBox(height: 15),
+                    _buildTextField(email, AppString.kEmail, false),
+                    const SizedBox(height: 15),
+                    _buildPasswordField(),
+                    const SizedBox(height: 25),
+                    _buildSignUpButton(isLoading),
+                    const SizedBox(height: 15),
+                    Text(
+                      AppString.kOrSignUPWith,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Appcolor.kgrey,
+                        fontSize: width * 0.035,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    _buildGoogleButton(isLoading),
+                    const Spacer(),
+                    _buildSignInRow(width),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    bool isPassword,
+  ) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:  BorderSide(color: Appcolor.kgrey, width: 2),
+        ),
+      ),
+      validator: (v) => v?.isEmpty ?? true ? "Required" : null,
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: password,
+      obscureText: isNotVisible,
+      decoration: InputDecoration(
+        labelText: AppString.kPassword,
+        suffixIcon: IconButton(
+          onPressed: () => setState(() => isNotVisible = !isNotVisible),
+          icon: Icon(isNotVisible ? Icons.visibility : Icons.visibility_off),
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide:  BorderSide(color: Appcolor.kgrey, width: 2),
+        ),
+      ),
+      validator: (v) => (v?.length ?? 0) < 6 ? "Minimum 6 characters" : null,
+    );
+  }
+
+  Widget _buildSignUpButton(bool isLoading) {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        onPressed: isLoading
+            ? null
+            : () {
+                if (formkey.currentState!.validate()) {
+                  context.read<AuthCubit>().signUp(
+                    email.text.trim(),
+                    password.text.trim(),
+                    username.text.trim(),
+                  );
+                }
+              },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Appcolor.kblack,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
+        child: isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text(
+                AppString.kSignUP,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }
 
-  void changePasswordVisible(bool visible) {
-    if (isNotVisible == visible) {
-      return;
-    } else {
-      isNotVisible = visible;
-    }
+  Widget _buildGoogleButton(bool isLoading) {
+    return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+        onPressed: isLoading
+            ? null
+            : () => context.read<AuthCubit>().signInWithGoogle(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Appcolor.kred,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text(
+                AppString.kGmail,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+      ),
+    );
   }
 
-  Future<void> signUp(BuildContext context) async {
-    if (!formkey.currentState!.validate()) return;
-
-    try {
-      final data = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email.text.trim(),
-        password: password.text.trim(),
-      );
-
-      final uid = data.user!.uid;
-      await usersFireStore.createUserToFireStore(
-        uid,
-        username.text.trim(),
-        email.text.trim(),
-      );
-
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text("Sign Up Successful"),
-          content: const Text("Welcome! Your account has been created."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // ✅ روح على Home مباشرة
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  Routes.homePage,
-                      (route) => false,
-                );
-              },
-              child: const Text("OK"),
-            ),
-          ],
+  Widget _buildSignInRow(double width) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          AppString.kAlready_have_an_account,
+          style: TextStyle(color: Appcolor.kgrey, fontSize: width * 0.04),
         ),
-      );
-    } catch (error) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Sign Up Failed"),
-          content: Text(error.toString()),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("OK"),
+        TextButton(
+          onPressed: () => Navigator.pushNamed(context, Routes.signIn),
+          child: Text(
+            AppString.kSignINNow,
+            style: TextStyle(
+              decoration: TextDecoration.underline,
+              color: Appcolor.kblack,
+              fontSize: width * 0.04,
+              fontWeight: FontWeight.bold,
             ),
-          ],
+          ),
         ),
-      );
-    }
+      ],
+    );
   }
 }
