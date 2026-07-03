@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "92948808001-9uv42sqvdj7n149iggtoqg4keq12omrc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tourguide.app.v1",
+            "certificate_hash": "912bc979715b14d34d845364b481d5ba8e78be97"
+          }
+        },
+        {
           "client_id": "92948808001-aupiqifvf8m10usq8eabgrpchngns051.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -1,5 +1,5 @@
 import 'package:depi_project/core/response_layout.dart';
-import 'package:depi_project/features/home/presentation/view/layouts/home_mobile_layout.dart';
+import 'package:depi_project/features/home/presentation/view/layouts/mobile/home_mobile_layout.dart';
 import 'package:depi_project/features/home/presentation/view/layouts/home_tablet_layout.dart';
 import 'package:depi_project/features/home/presentation/view/layouts/home_web_layout.dart';
 import 'package:flutter/material.dart';

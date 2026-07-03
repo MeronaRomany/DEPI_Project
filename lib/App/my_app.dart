@@ -19,12 +19,11 @@ class MyApp extends StatelessWidget {
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
 
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
 
-      initialRoute: Firebase.apps.isNotEmpty &&
-              FirebaseAuth.instance.currentUser != null &&
-              FirebaseAuth.instance.currentUser!.emailVerified
+      // theme: ThemeData.light(),
+      // darkTheme: ThemeData.dark(),
+      initialRoute:FirebaseAuth.instance.currentUser != null &&
+          FirebaseAuth.instance.currentUser!.emailVerified
           ? Routes.homePage
           : Routes.signIn,
       onGenerateRoute: AppRouter.generateRoute,

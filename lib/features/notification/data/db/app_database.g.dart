@@ -74,13 +74,17 @@ class _$AppDatabase extends AppDatabase {
 
   PlaceDao? _placeDaoInstance;
 
+  TripDao? _tripDaoInstance;
+
+  SavedPlaceDao? _savedPlaceDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 3,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -97,6 +101,10 @@ class _$AppDatabase extends AppDatabase {
       onCreate: (database, version) async {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `places` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, `type` TEXT NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `trips` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `title` TEXT NOT NULL, `destination` TEXT NOT NULL, `destinationImage` TEXT NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT NOT NULL, `places` TEXT NOT NULL, `placesCount` INTEGER NOT NULL, `schedule` TEXT NOT NULL, `image` TEXT NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `saved_places` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `image` TEXT NOT NULL, `location` TEXT NOT NULL, `rating` REAL NOT NULL, `description` TEXT NOT NULL, `category` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -107,6 +115,16 @@ class _$AppDatabase extends AppDatabase {
   @override
   PlaceDao get placeDao {
     return _placeDaoInstance ??= _$PlaceDao(database, changeListener);
+  }
+
+  @override
+  TripDao get tripDao {
+    return _tripDaoInstance ??= _$TripDao(database, changeListener);
+  }
+
+  @override
+  SavedPlaceDao get savedPlaceDao {
+    return _savedPlaceDaoInstance ??= _$SavedPlaceDao(database, changeListener);
   }
 }
 
@@ -154,5 +172,201 @@ class _$PlaceDao extends PlaceDao {
   Future<void> insertPlaces(List<PlaceEntity> places) async {
     await _placeEntityInsertionAdapter.insertList(
         places, OnConflictStrategy.abort);
+  }
+}
+
+class _$TripDao extends TripDao {
+  _$TripDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _tripEntityInsertionAdapter = InsertionAdapter(
+            database,
+            'trips',
+            (TripEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'title': item.title,
+                  'destination': item.destination,
+                  'destinationImage': item.destinationImage,
+                  'startDate': item.startDate,
+                  'endDate': item.endDate,
+                  'places': item.places,
+                  'placesCount': item.placesCount,
+                  'schedule': item.schedule,
+                  'image': item.image
+                }),
+        _tripEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'trips',
+            ['id'],
+            (TripEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'title': item.title,
+                  'destination': item.destination,
+                  'destinationImage': item.destinationImage,
+                  'startDate': item.startDate,
+                  'endDate': item.endDate,
+                  'places': item.places,
+                  'placesCount': item.placesCount,
+                  'schedule': item.schedule,
+                  'image': item.image
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<TripEntity> _tripEntityInsertionAdapter;
+
+  final UpdateAdapter<TripEntity> _tripEntityUpdateAdapter;
+
+  @override
+  Future<List<TripEntity>> getAllTrips() async {
+    return _queryAdapter.queryList('SELECT * FROM trips',
+        mapper: (Map<String, Object?> row) => TripEntity(
+            id: row['id'] as int?,
+            title: row['title'] as String,
+            destination: row['destination'] as String,
+            destinationImage: row['destinationImage'] as String,
+            startDate: row['startDate'] as String,
+            endDate: row['endDate'] as String,
+            places: row['places'] as String,
+            placesCount: row['placesCount'] as int,
+            schedule: row['schedule'] as String,
+            image: row['image'] as String));
+  }
+
+  @override
+  Future<TripEntity?> getTripById(int id) async {
+    return _queryAdapter.query('SELECT * FROM trips WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => TripEntity(
+            id: row['id'] as int?,
+            title: row['title'] as String,
+            destination: row['destination'] as String,
+            destinationImage: row['destinationImage'] as String,
+            startDate: row['startDate'] as String,
+            endDate: row['endDate'] as String,
+            places: row['places'] as String,
+            placesCount: row['placesCount'] as int,
+            schedule: row['schedule'] as String,
+            image: row['image'] as String),
+        arguments: [id]);
+  }
+
+  @override
+  Future<void> deleteTripById(int id) async {
+    await _queryAdapter
+        .queryNoReturn('DELETE FROM trips WHERE id = ?1', arguments: [id]);
+  }
+
+  @override
+  Future<void> deleteAllTrips() async {
+    await _queryAdapter.queryNoReturn('DELETE FROM trips');
+  }
+
+  @override
+  Future<void> insertTrip(TripEntity trip) async {
+    await _tripEntityInsertionAdapter.insert(trip, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateTrip(TripEntity trip) async {
+    await _tripEntityUpdateAdapter.update(trip, OnConflictStrategy.abort);
+  }
+}
+
+class _$SavedPlaceDao extends SavedPlaceDao {
+  _$SavedPlaceDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _savedPlaceEntityInsertionAdapter = InsertionAdapter(
+            database,
+            'saved_places',
+            (SavedPlaceEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'image': item.image,
+                  'location': item.location,
+                  'rating': item.rating,
+                  'description': item.description,
+                  'category': item.category,
+                  'latitude': item.latitude,
+                  'longitude': item.longitude
+                }),
+        _savedPlaceEntityDeletionAdapter = DeletionAdapter(
+            database,
+            'saved_places',
+            ['id'],
+            (SavedPlaceEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'image': item.image,
+                  'location': item.location,
+                  'rating': item.rating,
+                  'description': item.description,
+                  'category': item.category,
+                  'latitude': item.latitude,
+                  'longitude': item.longitude
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<SavedPlaceEntity> _savedPlaceEntityInsertionAdapter;
+
+  final DeletionAdapter<SavedPlaceEntity> _savedPlaceEntityDeletionAdapter;
+
+  @override
+  Future<List<SavedPlaceEntity>> getAllSavedPlaces() async {
+    return _queryAdapter.queryList('SELECT * FROM saved_places',
+        mapper: (Map<String, Object?> row) => SavedPlaceEntity(
+            id: row['id'] as String,
+            name: row['name'] as String,
+            image: row['image'] as String,
+            location: row['location'] as String,
+            rating: row['rating'] as double,
+            description: row['description'] as String,
+            category: row['category'] as String,
+            latitude: row['latitude'] as double?,
+            longitude: row['longitude'] as double?));
+  }
+
+  @override
+  Future<void> deleteSavedPlaceById(String id) async {
+    await _queryAdapter.queryNoReturn('DELETE FROM saved_places WHERE id = ?1',
+        arguments: [id]);
+  }
+
+  @override
+  Future<SavedPlaceEntity?> getSavedPlaceById(String id) async {
+    return _queryAdapter.query('SELECT * FROM saved_places WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => SavedPlaceEntity(
+            id: row['id'] as String,
+            name: row['name'] as String,
+            image: row['image'] as String,
+            location: row['location'] as String,
+            rating: row['rating'] as double,
+            description: row['description'] as String,
+            category: row['category'] as String,
+            latitude: row['latitude'] as double?,
+            longitude: row['longitude'] as double?),
+        arguments: [id]);
+  }
+
+  @override
+  Future<void> insertSavedPlace(SavedPlaceEntity place) async {
+    await _savedPlaceEntityInsertionAdapter.insert(
+        place, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteSavedPlace(SavedPlaceEntity place) async {
+    await _savedPlaceEntityDeletionAdapter.delete(place);
   }
 }
