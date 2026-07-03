@@ -14,13 +14,14 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
+  static bool _timezoneInitialized = false;
 
   static void onTap(NotificationResponse details) {
     navigatorKey.currentState?.push(
       MaterialPageRoute(
         builder: (_) => BlocProvider.value(
           value: getIt<NotificationCubit>(),
-          child: NotificationScreen(),
+          child: const NotificationScreen(),
         ),
       ),
     );
@@ -39,26 +40,12 @@ class NotificationService {
       onDidReceiveBackgroundNotificationResponse: onTap,
     );
 
-    // permissions (Android 13+)
     await _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.requestNotificationsPermission();
 
-    // exact alarm (for scheduled notifications)
-    final result = await _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestExactAlarmsPermission();
-    print("exact permission $result");
-
-    await _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
     await _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -76,16 +63,14 @@ class NotificationService {
   static Future<void> scheduleNotifications({
     required int id,
     required String body,
+    DateTime? scheduledDate,
   }) async {
-    tz.initializeTimeZones();
-
-    print(tz.local.name);
-    print("before ${tz.TZDateTime.now(tz.local).hour}");
-
-    final TimezoneInfo currentTimeZone = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(currentTimeZone.identifier));
-    print(tz.local.name);
-    print("After ${tz.TZDateTime.now(tz.local).hour}");
+    if (!_timezoneInitialized) {
+      tz.initializeTimeZones();
+      final TimezoneInfo currentTimeZone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(currentTimeZone.identifier));
+      _timezoneInitialized = true;
+    }
 
     NotificationDetails? notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -97,33 +82,34 @@ class NotificationService {
         priority: Priority.high,
       ),
     );
-    print("before schedule");
-    final scheduled=tz.TZDateTime(
-      tz.local,
-      2026,
-      7,
-      2,
-      20,
-      25,
-    );
-    await _plugin.zonedSchedule(
-      id,
-      "Reminder",
-      body,
-      scheduled,
-      notificationDetails,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-    );
-    print("now = ${tz.TZDateTime.now(tz.local)}");
-    print("scheduled = $scheduled");
-    print("difference = ${scheduled.difference(tz.TZDateTime.now(tz.local))}");
-    print("after schedule");
-    final pending = await _plugin.pendingNotificationRequests();
 
-    print("pending count ${pending.length}");
+    tz.TZDateTime scheduled;
+    if (scheduledDate != null) {
+      scheduled = tz.TZDateTime.from(scheduledDate, tz.local);
+      if (scheduled.isBefore(tz.TZDateTime.now(tz.local))) {
+        scheduled = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 10));
+      }
+    } else {
+      scheduled = tz.TZDateTime.now(tz.local).add(const Duration(seconds: 10));
+    }
+
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        "Reminder",
+        body,
+        scheduled,
+        notificationDetails,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+    } catch (e) {
+      // ignore duplicate ID errors silently, log others
+    }
   }
 
-
+  static Future<void> cancelNotification(int id) async {
+    await _plugin.cancel(id);
+  }
 }

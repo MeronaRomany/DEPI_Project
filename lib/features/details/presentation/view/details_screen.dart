@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:depi_project/features/home/data/model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../my_visit_places/data/model.dart';
+import '../../../my_visit_places/presentation/cubit/saved_places_cubit.dart';
+
 class DetailsScreen extends StatefulWidget {
-  final PlaceModel place; // استقبال الموديل
+  final PlaceModel place;
 
   const DetailsScreen({
     super.key,
@@ -22,7 +25,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // إعداد العلامة (Marker) فور إنشاء الـ State
     _setupMarker();
   }
 
@@ -38,7 +40,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
     }
   }
 
-  // دالة لتحريك الكاميرا للموقع المحدد
   void _moveToLocation() {
     if (widget.place.latitude != null &&
         widget.place.longitude != null &&
@@ -47,9 +48,8 @@ class _DetailsScreenState extends State<DetailsScreen> {
         CameraUpdate.newCameraPosition(
           CameraPosition(
             target: LatLng(widget.place.latitude!, widget.place.longitude!),
-            zoom: 15.0, // تقريب جيد للمكان
-            tilt: 45.0,   // زاوية ميلان ثلاثية الأبعاد
-            bearing: 0.0,
+            zoom: 15.0,
+            tilt: 45.0,
           ),
         ),
       );
@@ -71,7 +71,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // الجزء العلوي (الصورة وزر الرجوع)
           SliverToBoxAdapter(
             child: Stack(
               children: [
@@ -82,13 +81,11 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     height: 300,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 300,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
-                      );
-                    },
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 300,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                    ),
                   ),
                 ),
                 Positioned(
@@ -101,7 +98,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.9),
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
                       ),
                       child: const Icon(Icons.arrow_back, color: Colors.black),
                     ),
@@ -110,28 +107,38 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 Positioned(
                   top: 40,
                   right: 20,
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
-                    ),
-                    child: const Icon(Icons.favorite_border, color: Colors.red),
+                  child: BlocBuilder<SavedPlacesCubit, SavedPlacesState>(
+                    builder: (context, state) {
+                      final isSaved = (state is SavedPlacesLoaded) &&
+                          state.savedPlaces.any((p) => p['id'] == widget.place.id);
+                      
+                      return GestureDetector(
+                        onTap: () => context.read<SavedPlacesCubit>().toggleFavorite(widget.place.toMap()),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            shape: BoxShape.circle,
+                            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                          ),
+                          child: Icon(
+                            isSaved ? Icons.favorite : Icons.favorite_border,
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
             ),
           ),
-
-          // تفاصيل النصوص
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // العنوان والتقييم
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -168,8 +175,6 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-
-                  // الموقع النصي
                   Row(
                     children: [
                       const Icon(Icons.location_on, color: Colors.grey, size: 20),
@@ -183,24 +188,13 @@ class _DetailsScreenState extends State<DetailsScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // الوصف
-                  const Text(
-                    "About",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  const Text("About", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   Text(
                     widget.place.description,
-                    style: const TextStyle(
-                      color: Colors.black54,
-                      height: 1.5,
-                      fontSize: 15,
-                    ),
+                    style: const TextStyle(color: Colors.black54, height: 1.5, fontSize: 15),
                   ),
                   const SizedBox(height: 30),
-
-                  // زر فتح الخريطة الخارجية
                   if (widget.place.latitude != null && widget.place.longitude != null)
                     SizedBox(
                       width: double.infinity,
@@ -211,67 +205,53 @@ class _DetailsScreenState extends State<DetailsScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                       ),
                     ),
                   const SizedBox(height: 30),
-
-                  // عنوان الخريطة
-                  const Text(
-                    "Location on Map",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  const Text("Location on Map", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                 ],
               ),
             ),
           ),
-
-          // الخريطة التفاعلية
           SliverToBoxAdapter(
             child: Container(
-              height: 300, // ارتفاع الخريطة
+              height: 300,
               margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: widget.place.latitude != null && widget.place.longitude != null
                     ? GoogleMap(
-                  // 1. تحديد الموقع الأولي للكاميرا ليكون عند المكان مباشرة
-                  initialCameraPosition: CameraPosition(
-                    target: LatLng(
-                        widget.place.latitude ?? 30.0444,
-                        widget.place.longitude ?? 31.2357
-                    ),
-                    zoom: 14.5,
-                  ),
-                  markers: markers,
-                  myLocationEnabled: true,
-                  // 2. عند إنشاء الخريطة، نقوم بتحريك الكاميرا (لتأكيد التركيز)
-                  onMapCreated: (controller) {
-                    _mapController = controller;
-                    _moveToLocation();
-                  },
-                )
+                        initialCameraPosition: CameraPosition(
+                          target: LatLng(widget.place.latitude!, widget.place.longitude!),
+                          zoom: 14.5,
+                        ),
+                        markers: markers,
+                        myLocationEnabled: true,
+                        onMapCreated: (controller) {
+                          _mapController = controller;
+                          _moveToLocation();
+                        },
+                      )
                     : Container(
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.map_outlined, size: 50, color: Colors.grey),
-                        SizedBox(height: 10),
-                        Text("Location data not available"),
-                      ],
-                    ),
-                  ),
-                ),
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.map_outlined, size: 50, color: Colors.grey),
+                              SizedBox(height: 10),
+                              Text("Location data not available"),
+                            ],
+                          ),
+                        ),
+                      ),
               ),
             ),
           ),

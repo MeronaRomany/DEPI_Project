@@ -30,21 +30,23 @@ class PlaceModel {
 
   // تحويل من JSON (اللي جاي من السيرفيس) لـ Model
   factory PlaceModel.fromJson(Map<String, dynamic> json, String cat) {
-    // منطق ذكي لاستخراج الصورة (يدعم هيكل API المحتوي على images/medium/url)
     String extractedImage = json['image'] ?? '';
-    if (extractedImage.isEmpty && json['photo'] != null && json['photo']['images'] != null) {
-      extractedImage = json['photo']['images']['medium']?['url'] ?? extractedImage;
-    } else if (json['photo'] != null && json['photo']['images'] != null) {
-      extractedImage = json['photo']['images']['original']?['url'] ?? extractedImage;
+    if (extractedImage.isEmpty && json['photo'] is Map) {
+      final photo = json['photo'] as Map<String, dynamic>;
+      if (photo['images'] is Map) {
+        final images = photo['images'] as Map<String, dynamic>;
+        extractedImage = images['medium']?['url'] ?? extractedImage;
+        if (extractedImage.isEmpty) {
+          extractedImage = images['original']?['url'] ?? extractedImage;
+        }
+      }
     }
 
-    // منطق ذكي لاستخراج العنوان (يدعم address_obj)
     String extractedLocation = json['location'] ?? '';
-    if (extractedLocation.isEmpty && json['address_obj'] != null) {
-      extractedLocation = json['address_obj']['address_string'] ?? '';
+    if (extractedLocation.isEmpty && json['address_obj'] is Map) {
+      extractedLocation = (json['address_obj'] as Map<String, dynamic>)['address_string'] ?? '';
     }
 
-    // استخراج التقييم
     double extractedRating = 4.5;
     if (json['rating'] is num) {
       extractedRating = (json['rating'] as num).toDouble();
@@ -63,7 +65,6 @@ class PlaceModel {
       howToReach: json['howToReach'] != null ? List<String>.from(json['howToReach']) : null,
       subCategories: json['subCategories'] != null ? List<Map<String, dynamic>>.from(json['subCategories']) : null,
 
-      // تعبئة البيانات الجديدة
       latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
       longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
       webUrl: json['web_url'] ?? json['website'],

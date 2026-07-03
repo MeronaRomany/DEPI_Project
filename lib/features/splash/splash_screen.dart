@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// تأكدي من الاحتفاظ بسطر الـ Import الصحيح لصفحة الـ Sign In لديكِ واحذفي الآخر
-import '../../../../../Auth/presentation/view/Sign in/layouts/sign_in_mobile_layout.dart';
+import '../../core/routing/routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,22 +18,24 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // الانتظار لمدة 4 ثوانٍ ثم الانتقال مباشرة لصفحة الـ Sign In
-    _timer = Timer(const Duration(seconds: 4), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const SignInMobileLayout(),
-          ),
-        );
+    _timer = Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && user.emailVerified) {
+        Navigator.pushReplacementNamed(context, Routes.homePage);
+      } else if (user != null && !user.emailVerified) {
+        Navigator.pushReplacementNamed(context, Routes.verifyEmail);
+      } else {
+        Navigator.pushReplacementNamed(context, Routes.signIn);
       }
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel(); // إلغاء التايمر عند إغلاق الشاشة لمنع حدوث Memory Leak
+    _timer?.cancel();
     super.dispose();
   }
 

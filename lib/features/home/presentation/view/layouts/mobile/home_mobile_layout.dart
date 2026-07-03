@@ -1,16 +1,18 @@
 import 'package:depi_project/features/home/presentation/view/layouts/mobile/widgets/grid_card_item.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:depi_project/features/home/data/states_city_repo.dart';
-import 'package:depi_project/features/home/data/tripadvisor_service.dart';
-import 'package:depi_project/features/home/data/model.dart';
-import 'package:depi_project/features/details/presentation/view/details_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../notification/data/service/notifcation_service.dart';
+import 'package:depi_project/features/details/presentation/view/details_screen.dart';
+import 'package:depi_project/features/Auth/presentation/cubit/auth_cubit.dart';
+
+import '../../../../../my_visit_places/data/model.dart';
+import '../../../../../my_visit_places/data/states_city_repo.dart';
+import '../../../../../my_visit_places/data/tripadvisor_service.dart';
+import '../../../../../my_visit_places/presentation/cubit/saved_places_cubit.dart';
+import '../../../../../my_visit_places/presentation/view/saved_screen.dart';
 import '../../../../../notification/presentation/view/notification_screen.dart';
 import 'app_colors.dart';
-import 'profile.dart';
-import 'saved_screen.dart'; // استيراد صفحة المفضلة الجديدة هنا
+import '../../../../../profile/view/profile.dart';
 
 class HomeMobileLayout extends StatefulWidget {
   const HomeMobileLayout({super.key});
@@ -25,31 +27,21 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
 
-  String _userName = 'Traveler';
-
-  final List<Map<String, dynamic>> savedPlaces = [];
-  final List<String> categories = ["All", "Places", "Restaurants", "Cafes", "Museums"];
-
+  final List<String> categories = [
+    "All",
+    "Places",
+    "Restaurants",
+    "Cafes",
+    "Museums",
+  ];
   List<Map<String, dynamic>> apiSearchResults = [];
   bool isLoading = false;
-
-  bool _isLoadingMore = false;
-  int _currentOffset = 0;
   static const String cairoLocationId = "294019";
 
   @override
-  void initState() {
-    super.initState();
-    _getUserName();
-  }
-
-  void _getUserName() {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user != null && user.displayName != null && user.displayName!.isNotEmpty) {
-      setState(() {
-        _userName = user.displayName!;
-      });
-    }
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   List<Map<String, dynamic>> _getFilteredLocalItems() {
@@ -61,30 +53,23 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
       for (var s in states) {
         String stateName = s['name'] ?? 'Egypt';
         allItems.add({
-          "id": s['id'],
+          "id": s['id']?.toString() ?? stateName,
           "name": stateName,
           "image": s['image'],
           "location": s['details']?['location'] ?? stateName,
           "rating": s['details']?['reviews']?[0]?['rating'] ?? 4.5,
-          "description": "Discover the wonders of $stateName. A captivating destination offering rich history, unique culture, and unforgettable experiences for every traveler.",
-          "latitude": 26.8206,
-          "longitude": 30.8025,
-          "webUrl": "https://en.wikipedia.org/wiki/${stateName.replaceAll(' ', '_')}",
+          "description": "Discover the wonders of $stateName.",
           "category": "state",
         });
       }
       for (var c in cities) {
         String cityName = c['name'] ?? 'City';
         allItems.add({
-          "id": c['id'],
+          "id": c['id']?.toString() ?? cityName,
           "name": cityName,
           "image": c['image'],
           "location": c['details']?['location'] ?? c['stateId'] ?? "Egypt",
           "rating": 4.7,
-          "description": "$cityName is a vibrant city in ${c['stateId']}. Experience the local culture, delicious cuisine, and historical landmarks.",
-          "latitude": 30.0444,
-          "longitude": 31.2357,
-          "webUrl": "https://en.wikipedia.org/wiki/${cityName.replaceAll(' ', '_')}",
           "category": "city",
         });
       }
@@ -97,9 +82,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         "image": "https://images.unsplash.com/photo-1544025162-d76694265947",
         "location": "Cairo, Egypt",
         "rating": 4.8,
-        "description": "Delicious authentic Egyptian food and Koshary. Enjoy traditional flavors.",
-        "latitude": 30.0450,
-        "longitude": 31.2360,
         "category": "restaurant",
       });
     }
@@ -110,9 +92,6 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         "image": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
         "location": "Alexandria, Egypt",
         "rating": 4.6,
-        "description": "Relax in a cozy atmosphere with a cup of premium coffee and snacks.",
-        "latitude": 31.2001,
-        "longitude": 29.9187,
         "category": "cafe",
       });
     }
@@ -123,22 +102,19 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
         "image": "https://images.unsplash.com/photo-1539650116574-75c0c6d4d4e8",
         "location": "Tahrir Square, Cairo",
         "rating": 4.9,
-        "description": "Home to an extensive collection of ancient Egyptian antiquities and treasures.",
-        "latitude": 30.0478,
-        "longitude": 31.2336,
         "category": "museum",
       });
     }
 
     if (searchQuery.isNotEmpty) {
       allItems = allItems
-          .where((item) => item['name']
-          .toString()
-          .toLowerCase()
-          .contains(searchQuery.toLowerCase()))
+          .where(
+            (item) => item['name'].toString().toLowerCase().contains(
+              searchQuery.toLowerCase(),
+            ),
+          )
           .toList();
     }
-
     return allItems;
   }
 
@@ -146,442 +122,363 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
     if (category == "All") {
       setState(() {
         apiSearchResults = [];
-        _currentOffset = 0;
       });
       return;
     }
-
     setState(() {
       isLoading = true;
       apiSearchResults = [];
-      _currentOffset = 0;
     });
-
-    List<Map<String, dynamic>> results = [];
     try {
+      List<Map<String, dynamic>> results = [];
       if (category == "Restaurants") {
-        results = await TripAdvisorService.fetchRestaurants(cairoLocationId, offset: 0);
+        results = await TripAdvisorService.fetchRestaurants(cairoLocationId);
       } else if (category == "Cafes") {
-        final allRestaurants = await TripAdvisorService.fetchRestaurants(cairoLocationId, offset: 0);
-        results = allRestaurants.where((item) => item['name'].toString().toLowerCase().contains('cafe')).toList();
-        if (results.isEmpty) results = allRestaurants;
+        results = (await TripAdvisorService.fetchRestaurants(cairoLocationId))
+            .where(
+              (item) => item['name'].toString().toLowerCase().contains('cafe'),
+            )
+            .toList();
       } else if (category == "Places" || category == "Museums") {
-        results = await TripAdvisorService.fetchAttractions(cairoLocationId, offset: 0);
+        results = await TripAdvisorService.fetchAttractions(cairoLocationId);
         if (category == "Museums") {
-          results = results.where((item) => item['name'].toString().toLowerCase().contains('museum')).toList();
+          results = results
+              .where(
+                (item) =>
+                    item['name'].toString().toLowerCase().contains('museum'),
+              )
+              .toList();
         }
       }
-
-      setState(() {
-        apiSearchResults = results;
-        isLoading = false;
-      });
-    } catch (e) {
-      print("Error loading category: $e");
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _loadMoreData() async {
-    if (_isLoadingMore) return;
-    if (selectedCategory == "All") return;
-
-    setState(() {
-      _isLoadingMore = true;
-      _currentOffset += 30;
-    });
-
-    List<Map<String, dynamic>> newItems = [];
-    try {
-      if (selectedCategory == "Restaurants") {
-        newItems = await TripAdvisorService.fetchRestaurants(cairoLocationId, offset: _currentOffset);
-      } else if (selectedCategory == "Cafes") {
-        final allRestaurants = await TripAdvisorService.fetchRestaurants(cairoLocationId, offset: _currentOffset);
-        newItems = allRestaurants.where((item) => item['name'].toString().toLowerCase().contains('cafe')).toList();
-        if (newItems.isEmpty) newItems = allRestaurants;
-      } else if (selectedCategory == "Places" || selectedCategory == "Museums") {
-        newItems = await TripAdvisorService.fetchAttractions(cairoLocationId, offset: _currentOffset);
-        if (selectedCategory == "Museums") {
-          newItems = newItems.where((item) => item['name'].toString().toLowerCase().contains('museum')).toList();
-        }
-      }
-
-      setState(() {
-        apiSearchResults.addAll(newItems);
-        _isLoadingMore = false;
-      });
-    } catch (e) {
-      print("Error loading more: $e");
-      setState(() {
-        _isLoadingMore = false;
-      });
-    }
-  }
-
-  void _executeSearch(String value) async {
-    final cleanValue = value.trim();
-    if (cleanValue.isNotEmpty) {
-      setState(() {
-        isLoading = true;
-        searchQuery = cleanValue;
-        selectedCategory = "All";
-        apiSearchResults = [];
-      });
-
-      try {
-        final results = await TripAdvisorService.searchPlaces(cleanValue);
+      if (mounted)
         setState(() {
           apiSearchResults = results;
           isLoading = false;
         });
-      } catch (e) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } else {
+    } catch (_) {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _executeSearch(String value) async {
+    final cleanValue = value.trim();
+    if (cleanValue.isEmpty) {
       setState(() {
         searchQuery = '';
         apiSearchResults = [];
       });
+      return;
     }
-  }
-
-  void _toggleFavorite(Map<String, dynamic> place) {
     setState(() {
-      final isExist = savedPlaces.any((element) => element['id'] == place['id']);
-      if (isExist) {
-        savedPlaces.removeWhere((element) => element['id'] == place['id']);
-      } else {
-        savedPlaces.add(place);
-      }
+      isLoading = true;
+      searchQuery = cleanValue;
+      selectedCategory = "All";
+      apiSearchResults = [];
     });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+    try {
+      final results = await TripAdvisorService.searchPlaces(cleanValue);
+      if (mounted)
+        setState(() {
+          apiSearchResults = results;
+          isLoading = false;
+        });
+    } catch (_) {
+      if (mounted) setState(() => isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      bottomNavigationBar: _buildBottomNav(),
+    return BlocBuilder<SavedPlacesCubit, SavedPlacesState>(
+      builder: (context, savedState) {
+        final savedList = (savedState is SavedPlacesLoaded)
+            ? savedState.savedPlaces
+            : <Map<String, dynamic>>[];
 
-      body: SafeArea(
-        child: IndexedStack(
-          index: selectedNavIndex,
-          children: [
-            _buildHomeExploreContent(),
-            SavedScreen( // تم استبدال الكود القديم بالشاشة الجديدة هنا
-              savedPlaces: savedPlaces,
-              onToggleFavorite: _toggleFavorite,
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8F9FA),
+          bottomNavigationBar: _buildBottomNav(),
+          body: SafeArea(
+            child: IndexedStack(
+              index: selectedNavIndex,
+              children: [
+                _buildHomeExploreContent(savedList),
+                SavedScreen(
+                  savedPlaces: savedList,
+                  onToggleFavorite: (place) =>
+                      context.read<SavedPlacesCubit>().toggleFavorite(place),
+                ),
+                const Profile(),
+                NotificationScreen(),
+              ],
             ),
-            const Profile(),
-            NotificationScreen(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHomeExploreContent(List<Map<String, dynamic>> savedList) {
+    final itemsToDisplay =
+        (searchQuery.isNotEmpty && apiSearchResults.isNotEmpty)
+        ? apiSearchResults
+        : (apiSearchResults.isNotEmpty
+              ? apiSearchResults
+              : _getFilteredLocalItems());
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader()),
+        SliverToBoxAdapter(child: _buildSearchBar()),
+        SliverToBoxAdapter(child: _buildCategories()),
+        SliverToBoxAdapter(child: _buildSectionTitle(itemsToDisplay.length)),
+        _buildGrid(itemsToDisplay, savedList),
+        const SliverToBoxAdapter(child: SizedBox(height: 25)),
+      ],
+    );
+  }
+
+  Widget _buildHeader() {
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        String name = "Traveler";
+        if (state is AuthAuthenticated)
+          name = state.user.displayName ?? "Traveler";
+        return Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 180,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(
+                    "assets/images/top-view-travel-kit-wooden-table.jpg",
+                  ),
+                  fit: BoxFit.cover,
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              height: 180,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Welcome, $name 👋",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Text(
+                        "Explore the world with us!",
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  const CircleAvatar(
+                    radius: 22,
+                    backgroundColor: LocalAppColor.kred,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (v) {
+                  if (v.isEmpty)
+                    setState(() {
+                      searchQuery = '';
+                      apiSearchResults = [];
+                    });
+                },
+                onSubmitted: _executeSearch,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: LocalAppColor.kgrey,
+                  ),
+                  hintText: "Search destinations...",
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () => _executeSearch(_searchController.text),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: LocalAppColor.kred,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.tune, color: Colors.white, size: 22),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildHomeExploreContent() {
-    final width = MediaQuery.of(context).size.width;
-    final itemsToDisplay = (searchQuery.isNotEmpty && apiSearchResults.isNotEmpty)
-        ? apiSearchResults
-        : (apiSearchResults.isNotEmpty ? apiSearchResults : _getFilteredLocalItems());
-
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification scrollInfo) {
-        if (scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent && !_isLoadingMore) {
-          if (apiSearchResults.isNotEmpty) {
-            _loadMoreData();
-          }
-        }
-        return false;
-      },
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage("assets/images/top-view-travel-kit-wooden-table.jpg"),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
+  Widget _buildCategories() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final cat = categories[index];
+          final isSelected = selectedCategory == cat;
+          return GestureDetector(
+            onTap: () {
+              setState(() => selectedCategory = cat);
+              _loadCategoryData(cat);
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              decoration: BoxDecoration(
+                color: isSelected ? LocalAppColor.kred : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  cat,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : LocalAppColor.kblack,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
-                Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Welcome, $_userName 👋",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: width * 0.05,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Explore the world with us!",
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                      const CircleAvatar(
-                        radius: 22,
-                        backgroundColor: LocalAppColor.kred,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onChanged: (value) {
-                          if (value.trim().isEmpty) {
-                            setState(() {
-                              searchQuery = '';
-                              apiSearchResults = [];
-                            });
-                          }
-                        },
-                        onSubmitted: _executeSearch,
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.search, color: LocalAppColor.kgrey),
-                          suffixIcon: searchQuery.isNotEmpty
-                              ? IconButton(
-                            icon: const Icon(Icons.clear, color: LocalAppColor.kgrey),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                searchQuery = '';
-                                apiSearchResults = [];
-                              });
-                            },
-                          )
-                              : null,
-                          hintText: "Search destinations, restaurants...",
-                          hintStyle: const TextStyle(fontSize: 14, color: LocalAppColor.kgrey),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: () => _executeSearch(_searchController.text),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: LocalAppColor.kred,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.tune, color: Colors.white, size: 22),
-                    ),
-                  ),
-                ],
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(int count) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Text(
+            selectedCategory == "All"
+                ? "Popular Discovery"
+                : "Popular $selectedCategory",
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 50,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: categories.length,
-                itemBuilder: (context, index) {
-                  final cat = categories[index];
-                  final isSelected = selectedCategory == cat;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedCategory = cat;
-                        if (searchQuery.isNotEmpty) {
-                          _searchController.clear();
-                          searchQuery = '';
-                          apiSearchResults = [];
-                        }
-                      });
-                      if (cat != "All") {
-                        _loadCategoryData(cat);
-                      } else {
-                        setState(() {
-                          apiSearchResults = [];
-                        });
-                      }
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 22),
-                      decoration: BoxDecoration(
-                        color: isSelected ? LocalAppColor.kred : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected ? Colors.transparent : Colors.grey.shade200,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          cat,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : LocalAppColor.kblack,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+          const SizedBox(width: 8),
+          Text(
+            "($count)",
+            style: const TextStyle(fontSize: 16, color: LocalAppColor.kgrey),
           ),
-
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 20, bottom: 10),
-              child: Row(
-                children: [
-                  Text(
-                    selectedCategory == "All" ? "Popular Discovery" : "Popular $selectedCategory",
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: LocalAppColor.kblack),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "(${itemsToDisplay.length})",
-                    style: const TextStyle(fontSize: 16, color: LocalAppColor.kgrey, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: Builder(
-              builder: (context) {
-                if (isLoading) {
-                  return const SliverToBoxAdapter(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(60.0),
-                        child: CircularProgressIndicator(color: LocalAppColor.kred),
-                      ),
-                    ),
-                  );
-                }
-
-                if (itemsToDisplay.isEmpty) {
-                  return const SliverToBoxAdapter(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(40.0),
-                        child: Text(
-                          "No results found",
-                          style: TextStyle(color: LocalAppColor.kgrey, fontSize: 15),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-
-                return SliverGrid(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      final item = itemsToDisplay[index];
-                      final isSaved = savedPlaces.any((element) => element['id'] == item['id']);
-
-                      return GridCardItem(
-                        item: item,
-                        isSaved: isSaved,
-                        onTap: () {
-                          final placeModel = PlaceModel.fromJson(item, item['category'] ?? 'general');
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => DetailsScreen(place: placeModel)),
-                          );
-                        },
-                        onFavoriteTap: () => _toggleFavorite(item),
-                      );
-                    },
-                    childCount: itemsToDisplay.length,
-                  ),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 0.78,
-                  ),
-                );
-              },
-            ),
-          ),
-
-          if (_isLoadingMore)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 25)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGrid(
+    List<Map<String, dynamic>> items,
+    List<Map<String, dynamic>> savedList,
+  ) {
+    if (isLoading)
+      return const SliverToBoxAdapter(
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.all(60),
+            child: CircularProgressIndicator(color: LocalAppColor.kred),
+          ),
+        ),
+      );
+    if (items.isEmpty)
+      return const SliverToBoxAdapter(
+        child: Center(child: Text("No results found")),
+      );
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverGrid(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = items[index];
+          final isSaved = savedList.any(
+            (s) => s['id'].toString() == item['id'].toString(),
+          );
+          return GridCardItem(
+            item: item,
+            isSaved: isSaved,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetailsScreen(
+                  place: PlaceModel.fromJson(
+                    item,
+                    item['category'] ?? 'general',
+                  ),
+                ),
+              ),
+            ),
+            onFavoriteTap: () =>
+                context.read<SavedPlacesCubit>().toggleFavorite(item),
+          );
+        }, childCount: items.length),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.78,
+        ),
       ),
     );
   }
@@ -592,14 +489,15 @@ class _HomeMobileLayoutState extends State<HomeMobileLayout> {
       onTap: (index) => setState(() => selectedNavIndex = index),
       selectedItemColor: LocalAppColor.kred,
       unselectedItemColor: LocalAppColor.kgrey,
-      backgroundColor: LocalAppColor.kWhite,
       type: BottomNavigationBarType.fixed,
-      elevation: 10,
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Saved"),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notification"),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          label: "Notification",
+        ),
       ],
     );
   }

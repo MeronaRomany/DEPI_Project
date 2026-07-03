@@ -55,7 +55,6 @@ class PlaceRepository {
 
   Future<void> updateNearbyPlaces(Position pos) async {
     if (!tracker.shouldFetch(pos)) {
-      print("Using cache (no API call)");
       return;
     }
 
@@ -84,12 +83,14 @@ class PlaceRepository {
           .map((e) {
         final lat = e['lat'] ?? e['center']['lat'];
         final lon = e['lon'] ?? e['center']['lon'];
+        final rawId = e['id'];
+        final int id = rawId is int ? rawId : int.tryParse(rawId.toString()) ?? rawId.hashCode;
 
         return PlaceEntity(
-          id: e['id'],
+          id: id,
           name: e['tags']['name'],
-          lat: lat,
-          lon: lon,
+          lat: (lat as num).toDouble(),
+          lon: (lon as num).toDouble(),
           type: e['tags']?['tourism'] ??
               e['tags']?['historic'] ??
               'unknown',
@@ -97,7 +98,6 @@ class PlaceRepository {
       })
           .toList();
 
-      // Remove duplicates
       final unique = <int, PlaceEntity>{};
 
       for (final place in places) {
@@ -108,18 +108,15 @@ class PlaceRepository {
 
       cachedPlaces = places;
 
-      // Save to DB
       await db.placeDao.clearAll();
       await db.placeDao.insertPlaces(places);
 
-      // Get nearest places
       final nearestPlaces = getNearestPlacesFromUser(
         places: places,
         userLat: userLat,
         userLon: userLon,
       );
 
-      // Reset geofences
       await geofenceService.clearRegions();
 
       for (final place in nearestPlaces) {
@@ -131,29 +128,17 @@ class PlaceRepository {
         );
       }
 
-      // Test geofence
       geofenceService.addRegion(
         id: "999999",
         name: "Home Test",
         lat: userLat + 0.0001,
         radius: 30,
         lon: userLon,
-
       );
 
       await geofenceService.start();
-
-      print("✅ Places updated: ${places.length}");
-      print("✅ Geofences added: ${nearestPlaces.length}");
     } catch (e) {
-      print("API Error: $e");
-
-      // Fallback from local DB
       cachedPlaces = await db.placeDao.getAllPlaces();
-
-      print(
-        "♻️ Loaded ${cachedPlaces.length} places from local database",
-      );
     }
   }
 }
