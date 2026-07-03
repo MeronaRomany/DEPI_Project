@@ -10,10 +10,13 @@ import '../../features/home/presentation/view/home_screen.dart';
 import '../../features/my_visit_places/data/model.dart';
 import '../../features/profile/view/profile.dart';
 import '../../features/notification/presentation/view/notification_screen.dart';
+import '../../features/display_map/view/page_map.dart';
 
 class AppRouter {
-  static Route? generateRoute(RouteSettings setting) {
-    switch (setting.name) {
+  static Route? generateRoute(RouteSettings settings) {
+    debugPrint("CURRENT ROUTE = ${settings.name}");
+
+    switch (settings.name) {
       case Routes.signIn:
         return MaterialPageRoute(builder: (_) => const SignIn());
       case Routes.signUp:
@@ -40,6 +43,16 @@ class AppRouter {
           category: args['category'] ?? 'general',
           description: args['description'] ?? '',
         );
+        return MaterialPageRoute(builder: (_)=>NotificationScreen());
+      case Routes.page_map:
+        final args = settings.arguments as Map<String, dynamic>;
+
+        return MaterialPageRoute(builder: (_)=>MapPage(
+          lat: args['lat'],
+          lon: args['lon'],));
+       
+      case Routes.details:
+        final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => DetailsScreen(place: place),
         );

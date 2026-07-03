@@ -5,6 +5,7 @@ class Routes {
   static const String forgetPass="/forgetPassword";
   static const String verifyEmail="/verifyEmail";
   static const String notif="/Notifications";
+  static const String page_map="/PageMap";
 
   static const String details = "/details";
   static const String profile = "/profile";

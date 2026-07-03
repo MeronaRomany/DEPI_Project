@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-import '../../presentation/cubit/get_it.dart';
-import '../../presentation/cubit/notification_cubit.dart';
+import '../../../../core/routing/routes.dart';
 import '../../presentation/view/notification_screen.dart';
 
 class NotificationService {
@@ -30,6 +28,18 @@ class NotificationService {
   static Future<void> initNotifications() async {
 
     InitializationSettings initializationSettings = InitializationSettings(
+ static final  FlutterLocalNotificationsPlugin _plugin= FlutterLocalNotificationsPlugin();
+ static final GlobalKey<NavigatorState> navigatorKey =
+ GlobalKey<NavigatorState>();
+
+ static void onTap(NotificationResponse details) {
+   navigatorKey.currentState?.pushNamed(
+     Routes.notif,
+
+   );
+ }
+ static Future<void> initNotifications() async {
+    InitializationSettings initializationSettings =InitializationSettings(
       android: AndroidInitializationSettings("@mipmap/ic_launcher"),
       iOS: DarwinInitializationSettings(),
     );
@@ -112,4 +122,11 @@ class NotificationService {
   static Future<void> cancelNotification(int id) async {
     await _plugin.cancel(id);
   }
+}
+ static void showNotifications({required int id,required String body})async{
+   NotificationDetails? notificationDetails=NotificationDetails(
+     android: AndroidNotificationDetails("id1","base notif"),
+   );
+   await _plugin.show(id, "Near place", body, notificationDetails);
+ }
 }

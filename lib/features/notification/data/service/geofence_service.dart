@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:geofencing_api/geofencing_api.dart';
+// import 'package:geofencing_api/geofencing_api.dart' as geo;
 
 import '../../presentation/cubit/get_it.dart';
 import '../../presentation/cubit/notification_cubit.dart';
@@ -76,7 +77,10 @@ class GeofenceService {
     _regions.add(
       GeofenceRegion.circular(
         id: id,
-        data: {'name': name},
+        data: {'name': name,
+          'lat': lat,
+          'lon': lon,
+        },
         center: LatLng(lat, lon),
         radius: radius,
         loiteringDelay: 60000,
@@ -126,11 +130,18 @@ class GeofenceService {
       final data = region.data as Map<String, dynamic>?;
       final name = data?['name'] ?? '';
       debugPrint('Entered: $name');
+      final placeLat = data?['lat'] as double;
+      final placeLon = data?['lon'] as double;
 
       final cubit = getIt<NotificationCubit>();
 
-      cubit.showPlaceNotification(name);
 
+
+      cubit.showPlaceNotification(
+        name,
+        placeLat,
+        placeLon,
+      );
       NotificationService.showNotifications(
         id: region.id.hashCode,
         body:
