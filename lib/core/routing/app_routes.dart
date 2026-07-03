@@ -1,4 +1,5 @@
 import 'package:depi_project/core/routing/routes.dart';
+import 'package:depi_project/features/home_view/presentation/views/home_view.dart';
 import 'package:depi_project/features/details/presentation/view/details_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,7 @@ import '../../features/notification/presentation/view/notification_screen.dart';
 import '../../features/display_map/view/page_map.dart';
 
 class AppRouter {
+
   static Route? generateRoute(RouteSettings settings) {
     debugPrint("CURRENT ROUTE = ${settings.name}");
 
