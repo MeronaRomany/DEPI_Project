@@ -8,7 +8,6 @@ class TravelRepository {
 
   TravelRepository(this._dao, this._apiService);
 
-  /// Resolves a free-text place name (e.g. "Paris") to a location_id.
   Future<String?> searchLocationId(String query) =>
       _apiService.searchLocationId(query);
 
@@ -32,9 +31,7 @@ class TravelRepository {
         () => _apiService.fetchAttractions(locationId),
       );
 
-  /// Cache-first strategy:
-  /// 1. Return cached data if it exists in Floor DB for this location
-  /// 2. Otherwise fetch from API → save to DB → return
+
   Future<List<TravelItemEntity>> _getItems(
     String category,
     String locationId,
@@ -51,7 +48,6 @@ class TravelRepository {
     return fresh;
   }
 
-  /// Force refresh from API (ignores cache, clears everything)
   Future<void> refreshAll() async {
     await _dao.clearAll();
   }

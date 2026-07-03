@@ -10,7 +10,6 @@ class TravelItemEntity {
   final String rating;
   final String numReviews;
 
-  /// Discriminator: 'hotel' | 'restaurant' | 'attraction'
   final String category;
 
   final String locationId;

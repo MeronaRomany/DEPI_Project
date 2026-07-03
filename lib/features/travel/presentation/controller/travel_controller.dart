@@ -33,6 +33,7 @@ class TravelController extends GetxController {
       errorMessage.value = '';
 
       final locationId = currentLocationId.value;
+
       final results = await Future.wait([
         _repository.getHotels(locationId),
         _repository.getRestaurants(locationId),
@@ -49,8 +50,6 @@ class TravelController extends GetxController {
     }
   }
 
-  /// Looks up a destination typed by the user (e.g. "Paris") and switches
-  /// hotels/restaurants/attractions to that location.
   Future<void> searchLocation(String query) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
@@ -76,7 +75,6 @@ class TravelController extends GetxController {
     }
   }
 
-  /// Clears cache and re-fetches from API for the current location
   Future<void> forceRefresh() async {
     await _repository.refreshAll();
     await fetchAll();
