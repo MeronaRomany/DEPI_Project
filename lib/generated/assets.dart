@@ -5,14 +5,7 @@ import 'package:flutter/widgets.dart';
 class Assets {
   Assets._();
 
-  static const String env = 'env';
-  static const $AssetsAssetsGen assets = $AssetsAssetsGen();
-}
-
-class $AssetsAssetsGen {
-  const $AssetsAssetsGen();
-
-  final $AssetsImagesGen images = const $AssetsImagesGen();
+  static const $AssetsImagesGen images = $AssetsImagesGen();
 }
 
 class $AssetsImagesGen {

@@ -1,3 +1,5 @@
+import 'package:depi_project/core/routing/routes.dart';
+import 'package:depi_project/features/my_visit_places/data/model.dart';
 import 'package:depi_project/features/travel/data/models/travel_item_entity.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constant/app_color.dart';
@@ -45,7 +47,6 @@ class SectionListWidget extends StatelessWidget {
             ],
           ),
         ),
-
         SizedBox(
           height: 200,
           child: ListView.builder(
@@ -54,79 +55,88 @@ class SectionListWidget extends StatelessWidget {
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
-              return Container(
-                width: 150,
-                margin: const EdgeInsets.only(right: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16.0),
-                      child: SizedBox(
-                        height: 120,
-                        width: double.infinity,
-                        child: item.imageUrl.isNotEmpty
-                            ? Image.network(
-                                item.imageUrl,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, progress) {
-                                  if (progress == null) return child;
-                                  return Container(
-                                    color: Appcolor.kgrey.withAlpha(20),
-                                    child: const Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+              return GestureDetector(
+                onTap: () {
+                  final place = PlaceModel(
+                    id: item.id,
+                    name: item.name,
+                    image: item.imageUrl,
+                    location: item.locationId,
+                    rating: double.tryParse(item.rating) ?? 0.0,
+                    category: item.category,
+                    description: '',
+                  );
+                  Navigator.pushNamed(
+                    context,
+                    Routes.details,
+                    arguments: {'place': place},
+                  );
+                },
+                child: Container(
+                  width: 150,
+                  margin: const EdgeInsets.only(right: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16.0),
+                        child: SizedBox(
+                          height: 120,
+                          width: double.infinity,
+                          child: item.imageUrl.isNotEmpty
+                              ? Image.network(
+                                  item.imageUrl,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, progress) {
+                                    if (progress == null) return child;
+                                    return Container(
+                                      color: Appcolor.kgrey.withAlpha(20),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(strokeWidth: 2),
                                       ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) =>
-                                    _placeholder(),
-                              )
-                            : _placeholder(),
+                                    );
+                                  },
+                                  errorBuilder: (context, error, stackTrace) => _placeholder(),
+                                )
+                              : _placeholder(),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Appcolor.kblack,
+                      const SizedBox(height: 8),
+                      Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Appcolor.kblack,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    if (item.rating != '0')
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star_rounded,
-                            size: 14,
-                            color: Appcolor.kAttractionYellow,
-                          ),
-                          const SizedBox(width: 2),
-                          Text(
-                            item.rating,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Appcolor.kgrey,
+                      const SizedBox(height: 2),
+                      if (item.rating != '0')
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: Appcolor.kAttractionYellow,
                             ),
-                          ),
-                          if (item.numReviews != '0') ...[
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 2),
                             Text(
-                              '(${item.numReviews})',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Appcolor.kgrey.withAlpha(150),
-                              ),
+                              item.rating,
+                              style: TextStyle(fontSize: 12, color: Appcolor.kgrey),
                             ),
+                            if (item.numReviews != '0') ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                '(${item.numReviews})',
+                                style: TextStyle(fontSize: 11, color: Appcolor.kgrey.withAlpha(150)),
+                              ),
+                            ],
                           ],
-                        ],
-                      ),
-                  ],
+                        ),
+                    ],
+                  ),
                 ),
               );
             },

@@ -28,7 +28,6 @@ class _SignInPageState extends State<SignInMobileLayout> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
 
     return BlocConsumer<AuthCubit, AuthState>(
@@ -94,128 +93,17 @@ class _SignInPageState extends State<SignInMobileLayout> {
                         color: Appcolor.kgrey,
                       ),
                     ),
-
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    if (formkey.currentState!.validate()) {
-                      await FirebaseAuth.instance
-                          .signInWithEmailAndPassword(
-                        email: email.text.trim(),
-                        password: password.text.trim(),
-                      )
-                          .then((data) async {
-                        if (!data.user!.emailVerified) {
-                          await FirebaseAuth.instance.signOut();
-
-                          showDialog(
-                            context: context,
-                            builder: (context) => const AlertDialog(
-                              title: Text("Email not verified"),
-                              content: Text(
-                                "يرجى تأكيد البريد الإلكتروني أولاً",
-                              ),
-                            ),
-                          );
-
-                          return;
-                        }
-
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Login successful"),
-                            content: Text("Welcome ${data.user!.email}"),
-                          ),
-                        );
-
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          Routes.homePage,
-                              (route) => false,
-                        );
-                      })
-                          .catchError((error) {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const AlertDialog(
-                            title: Text("Login unsuccessful"),
-                            content: Text(
-                              "Please check your email or password.",
-                            ),
-                          ),
-                        );
-                      });
-                    }
-                  },
-                  child: Container(
-                    height: height * 0.07,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Appcolor.kblack,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: isLoading
-                          ? CircularProgressIndicator(color: Appcolor.kWhite)
-                          : Text(
-                        AppString.kSignIN,
-                        style: TextStyle(
-                          fontSize: width * 0.06,
-                          fontWeight: FontWeight.bold,
-                          color: Appcolor.kWhite,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Text(
-                  AppString.kOrSignInWith,
-                  style: TextStyle(
-                    color: Appcolor.kgrey,
-                    fontSize: width * 0.035,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      await AuthReo.signInWithGoogle(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Appcolor.kred,
-                    ),
-                    label: Text(
-                      AppString.kSignInGoogle,
-                      style: TextStyle(color: Appcolor.kWhite, fontSize: 18),
-                    ),
-                    icon: SizedBox(
-                      width: 60,
-                      child: Image.asset(
-                        AppImage.logoGoogle,
-                        width: 20,
-                        height: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        AppString.kDon_tHaveAnAccount,
-                        style: TextStyle(
-                          fontSize: width * 0.05,
-                          color: Appcolor.kgrey,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, Routes.signUp);
-                        },
+                    const SizedBox(height: 30),
+                    _buildTextField(email, AppString.kEmail, false),
+                    const SizedBox(height: 15),
+                    _buildPasswordField(),
+                    const SizedBox(height: 10),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushNamed(context, Routes.forgetPass);
+                      },
+                      child: Align(
+                        alignment: Alignment.centerRight,
                         child: Text(
                           AppString.kForgetPassword,
                           style: TextStyle(
@@ -263,7 +151,7 @@ class _SignInPageState extends State<SignInMobileLayout> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Appcolor.kgrey, width: 2),
+          borderSide:  BorderSide(color: Appcolor.kgrey, width: 2),
         ),
       ),
       validator: (v) => v?.isEmpty ?? true ? "Required" : null,

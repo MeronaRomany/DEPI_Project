@@ -32,37 +32,25 @@ class AuthRepository {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     if (googleUser == null) return null;
 
-    static Future<void> signInWithGoogle(BuildContext context) async {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) return;
-      final GoogleSignInAuthentication googleAuth = await googleUser
-          .authentication;
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
-      final credential = GoogleAuthProvider.credential(
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
 
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+    return await _auth.signInWithCredential(credential);
+  }
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        Routes.homePage,
-            (route) => false,
-      );
-    }
+  Future<void> sendPasswordReset(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
 
+  Future<void> reloadUser() async {
+    await _auth.currentUser?.reload();
+  }
 
-    Future<void> sendPasswordReset(String email) async {
-      await _auth.sendPasswordResetEmail(email: email);
-    }
-
-    Future<void> reloadUser() async {
-      await _auth.currentUser?.reload();
-    }
-
-    Future<void> resendVerificationEmail() async {
-      await _auth.currentUser?.sendEmailVerification();
-    }
+  Future<void> resendVerificationEmail() async {
+    await _auth.currentUser?.sendEmailVerification();
   }
 }

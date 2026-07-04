@@ -1,11 +1,6 @@
 import 'package:depi_project/core/networking/dio_helper.dart';
 import 'package:depi_project/features/Auth/presentation/cubit/auth_cubit.dart';
-import 'package:depi_project/features/travel/data/db/travel_dao.dart';
-import 'package:depi_project/features/travel/data/db/travel_database.dart';
-import 'package:depi_project/features/travel/data/models/travel_item_entity.dart';
-import 'package:depi_project/features/travel/data/remote/travel_api_service.dart';
-import 'package:depi_project/features/travel/data/repo/travel_repository.dart';
-import 'package:depi_project/features/travel/presentation/controller/travel_controller.dart';
+import 'package:depi_project/features/travel/presentation/cubit/travel_cubit.dart';
 
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,6 +15,8 @@ import 'package:device_preview/device_preview.dart';
 import 'features/my_visit_places/data/saved_place_dao.dart';
 import 'features/my_visit_places/presentation/cubit/saved_places_cubit.dart';
 import 'features/my_visit_places/presentation/cubit/trip_cubit.dart';
+import 'features/travel/data/repo/travel_repository.dart';
+import 'features/travel/presentation/controller/travel_controller.dart';
 
 import 'features/notification/data/api/overpass_api.dart';
 import 'features/notification/data/controller/location_controller.dart';
@@ -40,40 +37,39 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  DioHelper.init();
-
-  try {
-    await dotenv.load(fileName: ".env");
-  } catch (e) {
-    debugPrint("dotenv error: $e");
-  }
-
-  await _initTravelController();
-
   AppDatabase? db;
 
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await Future.wait([
+      dotenv.load(fileName: ".env"),
+      Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      ),
+    ]);
+
+    DioHelper.init();
 
     await FirebaseAppCheck.instance.activate(
       providerAndroid: AndroidDebugProvider(),
     );
 
     db = await $FloorAppDatabase.databaseBuilder('app.db').build();
+    setup(db);
+    await setupTravel();
+    Get.put(
+      TravelController(getIt<TravelRepository>()),
+      permanent: true,
+    );
 
+    // Notifications
     await NotificationService.initNotifications();
 
     final geofenceService = GeofenceService();
-
     final granted = await geofenceService.requestPermission();
 
     if (granted) {
       geofenceService.setup();
-
       final locationService = LocationService();
-
       final repository = PlaceRepository(
         OverpassApi(),
         db,
@@ -86,15 +82,11 @@ void main() async {
         locationService,
         repository.updateNearbyPlaces,
       );
-
       controller.start();
     }
-  } catch (e) {
+  } catch (e, s) {
     debugPrint("Initialization Error: $e");
-  }
-
-  if (db != null) {
-    setup(db);
+    debugPrintStack(stackTrace: s);
   }
 
   runApp(
@@ -110,9 +102,12 @@ void main() async {
           create: (_) => getIt<AuthCubit>(),
         ),
         BlocProvider(
-          create: (_) =>
-          SavedPlacesCubit(getIt<SavedPlaceDao>())
-            ..loadSavedPlaces(),
+          create: (_) => SavedPlacesCubit(
+            getIt<SavedPlaceDao>(),
+          )..loadSavedPlaces(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<TravelCubit>(),
         ),
       ],
       child: DevicePreview(
@@ -127,53 +122,4 @@ void main() async {
       ),
     ),
   );
-}
-
-Future<void> _initTravelController() async {
-  TravelDao dao;
-
-  try {
-    final db =
-    await $FloorTravelDatabase.databaseBuilder('travel.db').build();
-
-    dao = db.travelDao;
-
-    debugPrint("TravelDatabase opened successfully.");
-  } catch (e) {
-    debugPrint("TravelDatabase failed, using in-memory fallback: $e");
-
-    dao = _InMemoryTravelDao();
-  }
-
-  Get.put(
-    TravelController(
-      TravelRepository(
-        dao,
-        TravelApiService(),
-      ),
-    ),
-    permanent: true,
-  );
-}
-
-class _InMemoryTravelDao implements TravelDao {
-  @override
-  Future<List<TravelItemEntity>> getByCategory(
-      String category,
-      String locationId,
-      ) async {
-    return [];
-  }
-
-  @override
-  Future<void> insertItems(List<TravelItemEntity> items) async {}
-
-  @override
-  Future<void> deleteByCategory(
-      String category,
-      String locationId,
-      ) async {}
-
-  @override
-  Future<void> clearAll() async {}
 }

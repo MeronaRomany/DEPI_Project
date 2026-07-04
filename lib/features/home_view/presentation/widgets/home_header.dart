@@ -1,6 +1,7 @@
-import 'package:depi_project/features/travel/presentation/controller/travel_controller.dart';
+import 'package:depi_project/features/travel/presentation/cubit/travel_cubit.dart';
+import 'package:depi_project/features/travel/presentation/cubit/travel_state.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constant/app_color.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -8,8 +9,6 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TravelController controller = Get.find<TravelController>();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
@@ -28,15 +27,17 @@ class HomeHeader extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  Obx(
-                    () => Text(
-                      controller.currentLocationLabel.value,
-                      style: TextStyle(
-                        color: Appcolor.kblack,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  BlocBuilder<TravelCubit, TravelState>(
+                    builder: (context, state) {
+                      return Text(
+                        state.currentLocationLabel,
+                        style: TextStyle(
+                          color: Appcolor.kblack,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
                   ),
                   Icon(Icons.keyboard_arrow_down, color: Appcolor.kblack),
                 ],

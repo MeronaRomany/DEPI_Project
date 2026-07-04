@@ -1,46 +1,106 @@
+import 'package:depi_project/features/display_map/view/page_map.dart';
 import 'package:depi_project/features/home_view/presentation/widgets/categories_list.dart';
 import 'package:depi_project/features/home_view/presentation/widgets/search_bar_widget.dart';
 import 'package:depi_project/features/home_view/presentation/widgets/section_list_widget.dart';
-import 'package:depi_project/features/travel/presentation/controller/travel_controller.dart';
+import 'package:depi_project/features/my_visit_places/presentation/view/saved_screen.dart';
+import 'package:depi_project/features/notification/presentation/view/notification_screen.dart';
+import 'package:depi_project/features/profile/view/profile.dart';
+import 'package:depi_project/features/travel/presentation/cubit/travel_cubit.dart';
+import 'package:depi_project/features/travel/presentation/cubit/travel_state.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constant/app_color.dart';
 import '../widgets/home_header.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final TravelController controller = Get.find<TravelController>();
+  State<HomeView> createState() => _HomeViewState();
+}
 
+class _HomeViewState extends State<HomeView> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Appcolor.kWhite,
-      body: SafeArea(
-        child: RefreshIndicator(
-          color: Appcolor.kPrimary,
-          onRefresh: controller.forceRefresh,
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const HomeHeader(),
-                const SearchBarWidget(),
-                const CategoriesList(),
-                Obx(() {
-                  if (controller.isLoading.value) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 40),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: const [
+          _HomeContent(),
+          // MapPage(lat: 30.0444, lon: 31.2357),
+          SavedScreen(),
+          NotificationScreen(),
+          Profile(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Appcolor.kWhite,
+        selectedItemColor: Appcolor.kPrimary,
+        unselectedItemColor: Appcolor.kgrey,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: 'Map'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_border),
+            label: 'My List',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_none),
+            label: 'Notifications',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeContent extends StatelessWidget {
+  const _HomeContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: RefreshIndicator(
+        color: Appcolor.kPrimary,
+        onRefresh: () => context.read<TravelCubit>().forceRefresh(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const HomeHeader(),
+              const SearchBarWidget(),
+              const CategoriesList(),
+              BlocBuilder<TravelCubit, TravelState>(
+                builder: (context, state) {
+                  if (state.isLoading) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: Appcolor.kPrimary,
+                          color: Color(0xFF1E824C),
                         ),
                       ),
                     );
                   }
 
-                  if (controller.errorMessage.value.isNotEmpty) {
+                  if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
                     return Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
@@ -61,68 +121,53 @@ class HomeView extends StatelessWidget {
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Pull down to retry',
+                            state.errorMessage!,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 13,
                               color: Appcolor.kgrey.withAlpha(160),
                             ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () => context.read<TravelCubit>().fetchAll(),
+                            child: const Text('Retry'),
                           ),
                         ],
                       ),
                     );
                   }
 
+                  final showAll = state.selectedCategory == TravelCategory.all;
+
                   return Column(
                     children: [
-                      if (controller.attractions.isNotEmpty)
+                      if ((showAll || state.selectedCategory == TravelCategory.attractions) &&
+                          state.attractions.isNotEmpty)
                         SectionListWidget(
                           title: 'Popular Attractions',
-                          items: controller.attractions,
+                          items: state.attractions,
                         ),
-                      if (controller.hotels.isNotEmpty)
+                      if ((showAll || state.selectedCategory == TravelCategory.hotels) &&
+                          state.hotels.isNotEmpty)
                         SectionListWidget(
                           title: 'Popular Hotels',
-                          items: controller.hotels,
+                          items: state.hotels,
                         ),
-                      if (controller.restaurants.isNotEmpty)
+                      if ((showAll || state.selectedCategory == TravelCategory.restaurants) &&
+                          state.restaurants.isNotEmpty)
                         SectionListWidget(
                           title: 'Popular Restaurants',
-                          items: controller.restaurants,
+                          items: state.restaurants,
                         ),
                       const SizedBox(height: 16),
                     ],
                   );
-                }),
-              ],
-            ),
+                },
+              ),
+            ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Appcolor.kWhite,
-        selectedItemColor: Appcolor.kPrimary,
-        unselectedItemColor: Appcolor.kgrey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.map_outlined), label: 'Map'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: 'My List',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }

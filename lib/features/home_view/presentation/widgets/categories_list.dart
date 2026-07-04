@@ -1,4 +1,7 @@
+import 'package:depi_project/features/travel/presentation/cubit/travel_cubit.dart';
+import 'package:depi_project/features/travel/presentation/cubit/travel_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constant/app_color.dart';
 
 class CategoriesList extends StatelessWidget {
@@ -8,56 +11,83 @@ class CategoriesList extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Map<String, dynamic>> categories = [
       {
+        'label': 'All',
+        'icon': Icons.apps_rounded,
+        'color': Appcolor.kPrimary,
+        'category': TravelCategory.all,
+      },
+      {
         'label': 'Attractions',
         'icon': Icons.account_balance_rounded,
-        'color': Appcolor.kPrimary,
+        'color': Appcolor.kAttractionYellow,
+        'category': TravelCategory.attractions,
       },
-      {'label': 'Hotels', 'icon': Icons.hotel_rounded, 'color': Colors.blue},
+      {
+        'label': 'Hotels',
+        'icon': Icons.hotel_rounded,
+        'color': Colors.blue,
+        'category': TravelCategory.hotels,
+      },
       {
         'label': 'Restaurants',
         'icon': Icons.restaurant_rounded,
         'color': Colors.green,
-      },
-      {
-        'label': 'Historical',
-        'icon': Icons.museum_rounded,
-        'color': Colors.teal,
+        'category': TravelCategory.restaurants,
       },
     ];
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: categories.map((category) {
-          return Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: (category['color'] as Color).withAlpha(
-                    30,
-                  ), // خلفية خفيفة ملونة
-                  shape: BoxShape.circle,
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: BlocBuilder<TravelCubit, TravelState>(
+        builder: (context, state) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: categories.map((category) {
+              final isSelected = state.selectedCategory == category['category'];
+              final color = category['color'] as Color;
+
+              return GestureDetector(
+                onTap: () {
+                  context.read<TravelCubit>().selectCategory(category['category']);
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: isSelected ? color : color.withAlpha(30),
+                        shape: BoxShape.circle,
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: color.withAlpha(80),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                )
+                              ]
+                            : null,
+                      ),
+                      child: Icon(
+                        category['icon'],
+                        color: isSelected ? Colors.white : color,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      category['label'],
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected ? color : Appcolor.kblack,
+                      ),
+                    ),
+                  ],
                 ),
-                child: Icon(
-                  category['icon'],
-                  color: category['color'],
-                  size: 28,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                category['label'],
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Appcolor.kblack,
-                ),
-              ),
-            ],
+              );
+            }).toList(),
           );
-        }).toList(),
+        },
       ),
     );
   }

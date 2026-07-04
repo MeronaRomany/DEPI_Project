@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../home/presentation/view/layouts/mobile/app_colors.dart';
+import '../../../../core/constant/app_color.dart';
 import '../cubit/trip_cubit.dart';
+import '../cubit/saved_places_cubit.dart';
 import 'trip_details_screen.dart';
+import 'saved_screen.dart';
 
 class TripsScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> savedPlaces;
-
-  const TripsScreen({super.key, this.savedPlaces = const []});
+  const TripsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +27,12 @@ class TripsScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Text(
+                  Text(
                     "My Visit List",
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: LocalAppColor.kblack,
+                      color: Appcolor.kblack,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -40,7 +40,14 @@ class TripsScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
+                          onTap: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SavedScreen(),
+                              ),
+                            );
+                          },
                           child: Column(
                             children: [
                               Text(
@@ -60,12 +67,12 @@ class TripsScreen extends StatelessWidget {
                       Expanded(
                         child: Column(
                           children: [
-                            const Text(
+                            Text(
                               "My Trips",
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: LocalAppColor.kblack,
+                                color: Appcolor.kblack,
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -120,15 +127,15 @@ class TripsScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final trip = trips[index];
                         return GestureDetector(
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TripDetailsScreen(
-                                tripData: trip,
-                                savedPlaces: savedPlaces,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    TripDetailsScreen(tripData: trip),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
