@@ -49,10 +49,10 @@ class Profile extends StatelessWidget {
             return Center(child: CircularProgressIndicator(color: Appcolor.kred));
           }
 
-          String name = "No name available";
+          String name = "merona romany";
           if (snapshot.hasData && snapshot.data!.exists) {
             final data = snapshot.data!.data() as Map<String, dynamic>;
-            name = data['name'] ?? "No name available";
+            name = data['name'] ?? "merona romany";
           }
 
           return SingleChildScrollView(

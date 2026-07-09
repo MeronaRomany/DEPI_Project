@@ -30,7 +30,7 @@ class _HomeViewState extends State<HomeView> {
         index: _currentIndex,
         children: const [
           _HomeContent(),
-          // MapPage(lat: 30.0444, lon: 31.2357),
+          SizedBox(),
           SavedScreen(),
           NotificationScreen(),
           Profile(),
